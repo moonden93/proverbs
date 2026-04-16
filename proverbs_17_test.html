@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="잠언17장">
+<meta name="theme-color" content="#0a0f1e">
+<title>잠언 17장 암기</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0f1e;--bg2:#111827;--bg3:#1e2a3a;--accent:#3b82f6;--accent2:#60a5fa;--gold:#fbbf24;--green:#34d399;--red:#f87171;--purple:#a78bfa;--text:#f1f5f9;--muted:#94a3b8;--border:#1e3a5f;--font:'Nanum Gothic',sans-serif;}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex;flex-direction:column;max-width:480px;margin:0 auto;height:100%}
+#tabBar{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{flex:1;padding:11px 0 9px;text-align:center;font-size:10px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.on{color:var(--accent2);border-color:var(--accent2)}
+.tab .ti{font-size:17px;display:block;margin-bottom:2px}
+.screen{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.screen.on{display:flex}
+
+/* 홈 */
+.homeTop{background:linear-gradient(160deg,#0f1f3d,#1a2d4a);padding:22px 18px 18px;flex-shrink:0}
+.homeGreet{font-size:12px;color:var(--muted);margin-bottom:3px}
+.homeTitle{font-size:22px;font-weight:800;margin-bottom:2px}
+.homeSub{font-size:12px;color:var(--accent2)}
+.statsRow{display:flex;gap:10px;margin-top:14px}
+.statCard{flex:1;background:rgba(255,255,255,.06);border-radius:12px;padding:11px 8px;text-align:center}
+.statN{font-size:20px;font-weight:800;color:var(--gold)}
+.statL{font-size:10px;color:var(--muted);margin-top:1px}
+.secTitle{font-size:12px;font-weight:700;color:var(--muted);padding:14px 18px 8px;letter-spacing:.5px;flex-shrink:0}
+.todayProg{margin:0 18px 4px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:13px 15px;flex-shrink:0}
+.progLabel{font-size:12px;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between}
+.progBar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.progFill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s}
+.modeList{display:flex;flex-direction:column;gap:10px;padding:0 18px}
+.modeCard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:15px 16px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .15s}
+.modeCard:active{transform:scale(.97)}
+.modeStep{font-size:18px;font-weight:800;color:var(--border);min-width:28px;text-align:center}
+.modeIcon{font-size:28px;flex-shrink:0}
+.modeInfo{flex:1}
+.modeName{font-size:14px;font-weight:700}
+.modeDesc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:5px;font-weight:700}
+.bb{background:rgba(59,130,246,.2);color:var(--accent2)}
+.bg{background:rgba(251,191,36,.2);color:var(--gold)}
+.bp{background:rgba(167,139,250,.2);color:var(--purple)}
+.bk{background:rgba(52,211,153,.2);color:var(--green)}
+
+/* 공통 세션 */
+.sHdr{display:flex;align-items:center;gap:10px;padding:13px 18px;flex-shrink:0}
+.backBtn{background:var(--bg3);border:none;border-radius:10px;color:var(--text);padding:7px 12px;cursor:pointer;font-size:13px;font-family:var(--font)}
+.sPg{font-size:12px;color:var(--muted);flex:1;text-align:center}
+.sHrt{font-size:13px;letter-spacing:-2px}
+.sProgBar{height:4px;background:var(--bg3);margin:0 18px;border-radius:2px;overflow:hidden;flex-shrink:0}
+.sProgFill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .3s}
+
+/* 빈칸 퀴즈 */
+.qBody{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:13px;overflow-y:auto}
+.qVNum{font-size:12px;color:var(--gold);font-weight:700}
+.qTBox{font-size:17px;line-height:2.5;color:var(--text);background:var(--bg2);border-radius:16px;padding:18px 16px;border:1px solid var(--border)}
+.blank{display:inline-block;border-bottom:2px solid var(--accent2);min-width:52px;text-align:center;vertical-align:bottom;padding:0 4px;color:var(--accent2);font-weight:700;transition:all .2s}
+.blank.filled{border-color:var(--green);color:var(--green)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.cWrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.chip{background:var(--bg3);border:2px solid var(--border);border-radius:12px;padding:12px 18px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);color:var(--text);transition:all .15s;min-width:72px;text-align:center}
+.chip:active{transform:scale(.95)}
+.chip.used{opacity:.2;pointer-events:none}
+.chip.cok{background:rgba(52,211,153,.2);border-color:var(--green);color:var(--green)}
+.chip.cng{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red)}
+.qFb{border-radius:14px;padding:13px;font-size:14px;text-align:center;display:none;font-weight:700}
+.qFb.show{display:block}
+.qFb.ok{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.4);color:var(--green)}
+.qFb.ng{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red)}
+.nxtBtn{background:linear-gradient(135deg,var(--accent),#1d4ed8);border:none;border-radius:14px;color:#fff;padding:15px;font-size:16px;font-weight:700;cursor:pointer;width:100%;font-family:var(--font);display:none}
+.nxtBtn.show{display:block}
+
+/* 플래시카드 */
+.cWrap2{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 18px;gap:13px}
+.fCard{width:100%;background:linear-gradient(135deg,#111827,#1a2535);border:1px solid var(--border);border-radius:24px;padding:26px 20px;text-align:center;cursor:pointer;box-shadow:0 8px 32px rgba(0,0,0,.5);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative;transition:transform .15s}
+.fCard:active{transform:scale(.98)}
+.fVNum{font-size:12px;color:var(--gold);letter-spacing:1px;font-weight:700}
+.fVText{font-size:17px;line-height:2;color:var(--text);display:none}
+.fHint{font-size:13px;color:var(--muted)}
+.favBtn{position:absolute;top:13px;right:15px;background:none;border:none;font-size:22px;cursor:pointer;opacity:.45;transition:opacity .2s}
+.favBtn.on{opacity:1}
+.fBtns{display:flex;gap:12px;width:100%}
+.fBtn{flex:1;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.fBtn:active{transform:scale(.97)}
+.fKnow{background:linear-gradient(135deg,#065f46,#047857);color:#fff}
+.fNo{background:linear-gradient(135deg,#7f1d1d,#991b1b);color:#fff}
+.memoBox{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:13px}
+.memoTop{font-size:11px;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.memoSave{font-size:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 11px;cursor:pointer;font-family:var(--font);font-weight:700}
+.memoTA{width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:var(--font);resize:none;line-height:1.8;min-height:54px}
+
+/* 기록 */
+.pageHdr{padding:14px 18px 8px;flex-shrink:0}
+.pageTitle{font-size:16px;font-weight:800}
+.pageSub{font-size:11px;color:var(--muted);margin-top:2px}
+.calWrap{padding:0 18px;flex-shrink:0}
+.calNav{display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px}
+.calTitle{font-size:15px;font-weight:800}
+.calBtn{background:var(--bg3);border:none;border-radius:8px;color:var(--text);padding:6px 12px;cursor:pointer;font-size:13px}
+.calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calWd{font-size:10px;color:var(--muted);text-align:center;padding:3px 0}
+.calDay{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);cursor:pointer}
+.calDay.hm{background:rgba(59,130,246,.25);color:var(--accent2);font-weight:700}
+.calDay.td{background:var(--accent);color:#fff;font-weight:800}
+.calDay.st{background:rgba(52,211,153,.2);color:var(--green);font-weight:700}
+.memoList{padding:0 18px;margin-top:8px}
+.memoItem{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:13px;margin-bottom:10px}
+.miDate{font-size:11px;color:var(--gold);margin-bottom:4px;font-weight:700}
+.miVerse{font-size:12px;color:var(--accent2);margin-bottom:5px}
+.miText{font-size:14px;color:var(--text);line-height:1.7}
+.emptyMsg{text-align:center;padding:36px 20px;color:var(--muted);font-size:14px;line-height:2}
+
+/* 즐겨찾기 */
+.favList{padding:0 18px}
+.favItem{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:15px;margin-bottom:10px;position:relative}
+.fiNum{font-size:12px;color:var(--gold);font-weight:700;margin-bottom:6px}
+.fiText{font-size:15px;line-height:1.9;color:var(--text)}
+.fiRm{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer}
+
+/* 완료 */
+#done{display:none;position:fixed;inset:0;background:rgba(10,15,30,.96);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding:30px;max-width:480px;margin:0 auto}
+#done.show{display:flex}
+.doneE{font-size:60px}
+.doneT{font-size:23px;font-weight:800;text-align:center}
+.doneRow{display:flex;gap:22px}
+.dStat{text-align:center}
+.dN{font-size:28px;font-weight:800;color:var(--gold)}
+.dL{font-size:11px;color:var(--muted)}
+.dBtn{background:linear-gradient(135deg,var(--accent),#1d4ed8);border:none;border-radius:14px;color:#fff;padding:15px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%}
+.dBtn2{background:var(--bg3);border:1px solid var(--border);border-radius:14px;color:var(--text);padding:13px;font-size:14px;cursor:pointer;font-family:var(--font);width:100%}
+</style>
+</head>
+<body>
+
+<div id="tabBar">
+  <div class="tab on" onclick="showTab('home')"><span class="ti">🏠</span>홈</div>
+  <div class="tab" onclick="showTab('quiz')"><span class="ti">✏️</span>빈칸퀴즈</div>
+  <div class="tab" onclick="showTab('flash')"><span class="ti">📖</span>플래시</div>
+  <div class="tab" onclick="showTab('record')"><span class="ti">📅</span>기록</div>
+  <div class="tab" onclick="showTab('fav')"><span class="ti">⭐</span>즐겨찾기</div>
+</div>
+
+<!-- 홈 -->
+<div id="homeScreen" class="screen on">
+  <div class="homeTop">
+    <div class="homeGreet" id="homeGreet">좋은 하루입니다 🙏</div>
+    <div class="homeTitle">잠언 17장</div>
+    <div class="homeSub">개역개정 · 전체 28절</div>
+    <div class="statsRow">
+      <div class="statCard"><div class="statN" id="sStreak">🔥 0</div><div class="statL">연속 학습일</div></div>
+      <div class="statCard"><div class="statN" id="sTotal">0</div><div class="statL">총 암송 절</div></div>
+      <div class="statCard"><div class="statN" id="sWeak">0</div><div class="statL">취약 절</div></div>
+    </div>
+  </div>
+  <div class="secTitle">오늘 진행률</div>
+  <div class="todayProg">
+    <div class="progLabel"><span id="pText">0 / 28절 완료</span><span id="pPct">0%</span></div>
+    <div class="progBar"><div class="progFill" id="pFill" style="width:0%"></div></div>
+  </div>
+  <div class="secTitle">학습 순서</div>
+  <div class="modeList">
+    <div class="modeCard" onclick="startQuiz('all')">
+      <div class="modeStep">1</div><div class="modeIcon">✏️</div>
+      <div class="modeInfo"><div class="modeName">빈칸 퀴즈</div><div class="modeDesc">핵심단어 탭해서 채우기 · 1절부터 순서대로</div><div class="badge bb">전체 28절</div></div>
+    </div>
+    <div class="modeCard" onclick="startFlash('all')">
+      <div class="modeStep">2</div><div class="modeIcon">📖</div>
+      <div class="modeInfo"><div class="modeName">플래시카드</div><div class="modeDesc">절 번호 보고 본문 떠올리기 · 1절부터 순서대로</div><div class="badge bg">전체 28절</div></div>
+    </div>
+    <div class="modeCard" onclick="startFlash('weak')">
+      <div class="modeStep">3</div><div class="modeIcon">⭐</div>
+      <div class="modeInfo"><div class="modeName">취약절 복습</div><div class="modeDesc">틀렸던 절만 모아서 플래시카드</div><div class="badge bp" id="wBadge">0절</div></div>
+    </div>
+    <div class="modeCard" onclick="startQuiz('fav')">
+      <div class="modeStep">4</div><div class="modeIcon">❤️</div>
+      <div class="modeInfo"><div class="modeName">즐겨찾기 퀴즈</div><div class="modeDesc">즐겨찾기한 절만 빈칸 퀴즈</div><div class="badge bk" id="fBadge">0절</div></div>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- 빈칸 퀴즈 -->
+<div id="quizScreen" class="screen">
+  <div class="sHdr">
+    <button class="backBtn" onclick="goHome()">← 홈</button>
+    <span class="sPg" id="qPg">1 / 28</span>
+    <span class="sHrt" id="qHrt">❤️❤️❤️❤️❤️</span>
+  </div>
+  <div class="sProgBar"><div class="sProgFill" id="qProg"></div></div>
+  <div class="qBody" id="qBody"></div>
+</div>
+
+<!-- 플래시카드 -->
+<div id="flashScreen" class="screen">
+  <div class="sHdr">
+    <button class="backBtn" onclick="goHome()">← 홈</button>
+    <span class="sPg" id="fPg">1 / 28</span>
+    <span class="sHrt" id="fHrt">❤️❤️❤️❤️❤️</span>
+  </div>
+  <div class="sProgBar"><div class="sProgFill" id="fProg"></div></div>
+  <div class="cWrap2">
+    <div class="fCard" id="fCard" onclick="flip()">
+      <button class="favBtn" id="favBtn" onclick="togFav(event)">☆</button>
+      <div class="fVNum" id="fVNum">잠언 17:1</div>
+      <div class="fHint" id="fHint">👆 탭해서 본문 확인</div>
+      <div class="fVText" id="fVText"></div>
+    </div>
+    <div class="fBtns" id="fBtns" style="display:none">
+      <button class="fBtn fNo" onclick="ans(false)">❌ 몰랐다</button>
+      <button class="fBtn fKnow" onclick="ans(true)">✅ 알았다</button>
+    </div>
+    <div class="memoBox">
+      <div class="memoTop"><span>📔 오늘의 묵상</span><button class="memoSave" id="mSave" onclick="saveMemo()">저장</button></div>
+      <textarea class="memoTA" id="mTA" placeholder="이 말씀에서 느낀 점을 적어보세요..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- 기록 -->
+<div id="recordScreen" class="screen">
+  <div class="pageHdr"><div class="pageTitle">📅 학습 기록</div><div class="pageSub">날짜 탭 → 그날 묵상 보기</div></div>
+  <div class="calWrap">
+    <div class="calNav">
+      <button class="calBtn" onclick="chMon(-1)">◀</button>
+      <div class="calTitle" id="calT"></div>
+      <button class="calBtn" onclick="chMon(1)">▶</button>
+    </div>
+    <div class="calGrid"><div class="calWd">일</div><div class="calWd">월</div><div class="calWd">화</div><div class="calWd">수</div><div class="calWd">목</div><div class="calWd">금</div><div class="calWd">토</div></div>
+    <div class="calGrid" id="calG"></div>
+  </div>
+  <div class="memoList" id="mList"></div>
+</div>
+
+<!-- 즐겨찾기 -->
+<div id="favScreen" class="screen">
+  <div class="pageHdr"><div class="pageTitle">⭐ 즐겨찾기</div><div class="pageSub">마음에 새긴 말씀들</div></div>
+  <div class="favList" id="fList"></div>
+</div>
+
+<!-- 완료 -->
+<div id="done">
+  <div class="doneE" id="doneE">🎉</div>
+  <div class="doneT" id="doneT">완료!</div>
+  <div class="doneRow">
+    <div class="dStat"><div class="dN" id="dXP">0</div><div class="dL">✨ XP</div></div>
+    <div class="dStat"><div class="dN" id="dOK">0</div><div class="dL">✅ 정답</div></div>
+    <div class="dStat"><div class="dN" id="dWK">0</div><div class="dL">⭐ 취약</div></div>
+  </div>
+  <button class="dBtn" onclick="closeDone()">홈으로</button>
+  <button class="dBtn2" id="retryBtn" onclick="retryWeak()">취약절 다시 풀기</button>
+</div>
+
+<script>
+const V=[
+{v:1,t:"마른 떡 한 조각만 있고도 화목하는 것이 제육이 집에 가득하고도 다투는 것보다 나으니라",k:["떡","화목","제육","다투는"]},
+{v:2,t:"슬기로운 종은 부끄러운 짓을 하는 주인의 아들을 다스리겠고 또 형제들 중에서 유업을 나누어 얻으리라",k:["슬기로운","종","주인","유업"]},
+{v:3,t:"도가니는 은을, 풀무는 금을 연단하거니와 여호와는 마음을 연단하시느니라",k:["도가니","은","풀무","금","마음","연단"]},
+{v:4,t:"악을 행하는 자는 사악한 입술이 하는 말을 잘 듣고 거짓말을 하는 자는 악한 혀가 하는 말에 귀를 기울이느니라",k:["악","사악한","거짓말","혀"]},
+{v:5,t:"가난한 자를 조롱하는 자는 그를 지으신 주를 멸시하는 자요 사람의 재앙을 기뻐하는 자는 형벌을 면하지 못할 자니라",k:["가난한","멸시","재앙","형벌"]},
+{v:6,t:"손자는 노인의 면류관이요 아비는 자식의 영화니라",k:["손자","면류관","아비","영화"]},
+{v:7,t:"지나친 말을 하는 것도 미련한 자에게 합당하지 아니하거든 하물며 거짓말을 하는 것이 존귀한 자에게 합당하겠느냐",k:["미련한","거짓말","존귀한","합당하겠느냐"]},
+{v:8,t:"뇌물은 그 임자가 보기에 보석 같은즉 그가 어디로 향하든지 형통하게 하느니라",k:["뇌물","보석","형통"]},
+{v:9,t:"허물을 덮어 주는 자는 사랑을 구하는 자요 그것을 거듭 말하는 자는 친한 벗을 이간하는 자니라",k:["허물","사랑","이간"]},
+{v:10,t:"한 마디 말로 총명한 자에게 충고하는 것이 매 백 대로 미련한 자를 때리는 것보다 더욱 깊이 박히느니라",k:["총명한","충고","미련한","박히느니라"]},
+{v:11,t:"악한 자는 반역만 힘쓰나니 그러므로 그에게 잔인한 사자가 보냄을 받으리라",k:["악한","반역","잔인한","사자"]},
+{v:12,t:"차라리 새끼 빼앗긴 암곰을 만날지언정 미련한 일을 행하는 미련한 자를 만나지 말 것이니라",k:["암곰","미련한"]},
+{v:13,t:"누구든지 악으로 선을 갚으면 악이 그 집을 떠나지 아니하리라",k:["악","선","집"]},
+{v:14,t:"다투는 시작은 둑에서 물이 새는 것 같은즉 싸움이 일어나기 전에 시비를 그칠 것이니라",k:["다투는","둑","싸움","시비"]},
+{v:15,t:"악인을 의롭다 하고 의인을 악하다 하는 이 두 사람은 다 여호와께 미움을 받느니라",k:["악인","의인","여호와","미움"]},
+{v:16,t:"미련한 자는 무지하거늘 손에 값을 가지고 지혜를 사려 함은 어찜인고",k:["미련한","무지","지혜"]},
+{v:17,t:"친구는 사랑이 끊어지지 아니하고 형제는 위급한 때를 위하여 났느니라",k:["친구","사랑","형제","위급"]},
+{v:18,t:"지혜 없는 자는 남의 손을 잡고 그의 이웃 앞에서 보증이 되느니라",k:["지혜","손","이웃","보증"]},
+{v:19,t:"다툼을 좋아하는 자는 죄과를 좋아하는 자요 자기 문을 높이는 자는 파괴를 구하는 자니라",k:["다툼","죄과","문","파괴"]},
+{v:20,t:"마음이 굽은 자는 복을 얻지 못하고 혀가 패역한 자는 재앙에 빠지느니라",k:["굽은","복","패역한","재앙"]},
+{v:21,t:"미련한 자를 낳는 자는 근심을 당하나니 미련한 자의 아비는 낙이 없느니라",k:["미련한","근심","아비","낙"]},
+{v:22,t:"마음의 즐거움은 양약이라도 심령의 근심은 뼈를 마르게 하느니라",k:["즐거움","양약","근심","뼈"]},
+{v:23,t:"악인은 사람의 품에서 뇌물을 받고 재판을 굽게 하느니라",k:["악인","뇌물","재판","굽게"]},
+{v:24,t:"지혜는 명철한 자 앞에 있거늘 미련한 자는 눈을 땅 끝에 두느니라",k:["지혜","명철한","미련한","눈"]},
+{v:25,t:"미련한 아들은 그 아비의 근심이 되고 그 어미의 고통이 되느니라",k:["미련한","아비","근심","어미","고통"]},
+{v:26,t:"의인을 벌하는 것과 귀인을 정직하다고 때리는 것은 선하지 못하니라",k:["의인","벌","귀인","정직하다"]},
+{v:27,t:"말을 아끼는 자는 지식이 있고 성품이 냉철한 자는 명철하니라",k:["말","지식","냉철한","명철하니라"]},
+{v:28,t:"미련한 자라도 잠잠하면 지혜로운 자로 여겨지고 그의 입술을 닫으면 슬기로운 자로 여겨지느니라",k:["미련한","잠잠","지혜로운","입술","슬기로운"]},
+];
+
+const S={
+  get:k=>{try{return JSON.parse(localStorage.getItem('p17_'+k))}catch{return null}},
+  set:(k,v)=>{try{localStorage.setItem('p17_'+k,JSON.stringify(v))}catch{}}
+};
+const td=()=>new Date().toISOString().slice(0,10);
+const shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+
+let qList=[],qIdx=0,qHrts=5,qXP=0,qOK=0,qMode='all',qBlanks=[],qFilled=0,qWrong=false;
+let fList=[],fIdx=0,fFlipped=false,fHrts=5,fXP=0,fOK=0,fMode='all';
+let calY,calM;
+
+// 탭
+function showTab(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(n+'Screen').classList.add('on');
+  ['home','quiz','flash','record','fav'].forEach((t,i)=>{if(t===n)document.querySelectorAll('.tab')[i].classList.add('on');});
+  if(n==='record')renderCal();
+  if(n==='fav')renderFav();
+  if(n==='home')updHome();
+}
+function goHome(){showTab('home');}
+
+// 홈
+function updHome(){
+  const streak=getStreak(),weak=S.get('weak')||[],favs=S.get('favs')||[],
+        done=S.get('done_'+td())||[],tot=S.get('total')||0;
+  document.getElementById('sStreak').textContent='🔥 '+streak;
+  document.getElementById('sTotal').textContent=tot;
+  document.getElementById('sWeak').textContent=weak.length;
+  document.getElementById('wBadge').textContent=weak.length+'절';
+  document.getElementById('fBadge').textContent=favs.length+'절';
+  const p=Math.round(done.length/28*100);
+  document.getElementById('pText').textContent=done.length+' / 28절 완료';
+  document.getElementById('pPct').textContent=p+'%';
+  document.getElementById('pFill').style.width=p+'%';
+  const h=new Date().getHours();
+  document.getElementById('homeGreet').textContent=h<12?'좋은 아침입니다 ☀️':h<18?'좋은 오후입니다 🙏':h<22?'좋은 저녁입니다 🌙':'야심한 밤이네요 🌟';
+}
+function getStreak(){
+  const d=S.get('streak')||{c:0,l:''};
+  const t=td(),yest=new Date();yest.setDate(yest.getDate()-1);
+  const y=yest.toISOString().slice(0,10);
+  return(d.l===t||d.l===y)?d.c:0;
+}
+function updStreak(){
+  const t=td(),d=S.get('streak')||{c:0,l:''};
+  const yest=new Date();yest.setDate(yest.getDate()-1);
+  const y=yest.toISOString().slice(0,10);
+  if(d.l===t)return;
+  S.set('streak',{c:(d.l===y||d.l==='')?d.c+1:1,l:t});
+  let sd=S.get('studyDates')||[];
+  if(!sd.includes(t)){sd.push(t);S.set('studyDates',sd);}
+}
+function markDone(vn){
+  const k='done_'+td();let d=S.get(k)||[];
+  if(!d.includes(vn)){d.push(vn);S.set(k,d);}
+  let tot=S.get('total')||0;S.set('total',tot+1);
+}
+function addWeak(vn){let w=S.get('weak')||[];if(!w.includes(vn)){w.push(vn);S.set('weak',w);}}
+function rmWeak(vn){S.set('weak',(S.get('weak')||[]).filter(x=>x!==vn));}
+
+// ── 빈칸 퀴즈 ──
+function startQuiz(mode){
+  qMode=mode;
+  if(mode==='fav'){
+    const favs=S.get('favs')||[];
+    if(!favs.length){alert('즐겨찾기한 절이 없어요!\n플래시카드에서 ☆를 탭해 저장해보세요 😊');return;}
+    qList=V.filter(v=>favs.includes(v.v));
+  } else {
+    qList=[...V]; // 1절부터 순서대로 — 섞지 않음
+  }
+  qIdx=0;qHrts=5;qXP=0;qOK=0;
+  showTab('quiz');
+  renderQ();
+}
+
+function renderQ(){
+  if(qIdx>=qList.length){showDone('quiz');return;}
+  const v=qList[qIdx];
+  qBlanks=[...v.k];qFilled=0;qWrong=false;
+  document.getElementById('qPg').textContent=(qIdx+1)+' / '+qList.length;
+  document.getElementById('qHrt').textContent='❤️'.repeat(qHrts)+'🖤'.repeat(5-qHrts);
+  document.getElementById('qProg').style.width=(qIdx/qList.length*100)+'%';
+
+  let txt=v.t;
+  let bi=0;
+  v.k.forEach(k=>{
+    txt=txt.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),
+      `<span class="blank" id="b${bi++}" data-a="${k}">　　</span>`);
+  });
+  const choices=shuf([...v.k]);
+  document.getElementById('qBody').innerHTML=`
+    <div class="qVNum">잠언 17:${v.v}</div>
+    <div class="qTBox">${txt}</div>
+    <div class="cWrap" id="cw">${choices.map(c=>`<button class="chip" onclick="pick('${c.replace(/'/g,"\\'")}',this)">${c}</button>`).join('')}</div>
+    <div class="qFb" id="qfb"></div>
+    <button class="nxtBtn" id="nxt" onclick="nextQ()">다음 절 →</button>`;
+}
+
+function pick(word,btn){
+  const blanks=document.querySelectorAll('.blank');
+  let target=null;
+  for(let i=0;i<blanks.length;i++){if(!blanks[i].classList.contains('filled')){target=blanks[i];break;}}
+  if(!target)return;
+  const ans=target.dataset.a;
+  if(word===ans){
+    target.textContent=word;target.classList.add('filled');
+    btn.classList.add('cok','used');
+    qFilled++;
+    if(qFilled===qBlanks.length){
+      if(!qWrong){qOK++;qXP+=10+qBlanks.length*3;markDone(qList[qIdx].v);rmWeak(qList[qIdx].v);}
+      else qXP+=5;
+      const fb=document.getElementById('qfb');
+      fb.textContent=qWrong?'✅ 완성! (오답 있음)':'🎉 완벽합니다!';
+      fb.className='qFb ok show';
+      document.getElementById('nxt').className='nxtBtn show';
+      updStreak();
+    }
+  } else {
+    qWrong=true;
+    qHrts=Math.max(0,qHrts-1);
+    document.getElementById('qHrt').textContent='❤️'.repeat(qHrts)+'🖤'.repeat(5-qHrts);
+    addWeak(qList[qIdx].v);
+    btn.classList.add('cng');
+    target.style.animation='shake .3s';
+    setTimeout(()=>{target.style.animation='';btn.classList.remove('cng');},500);
+  }
+}
+function nextQ(){qIdx++;renderQ();}
+
+// ── 플래시카드 ──
+function startFlash(mode){
+  fMode=mode;
+  if(mode==='weak'){
+    const w=S.get('weak')||[];
+    if(!w.length){alert('취약절이 없어요!\n먼저 빈칸 퀴즈를 풀어보세요 😊');return;}
+    fList=V.filter(v=>w.includes(v.v)); // 절 번호 순서 유지
+  } else {
+    fList=[...V]; // 1절부터 순서대로 — 섞지 않음
+  }
+  fIdx=0;fHrts=5;fXP=0;fOK=0;
+  showTab('flash');
+  renderF();
+}
+
+function renderF(){
+  if(fIdx>=fList.length){showDone('flash');return;}
+  const v=fList[fIdx];
+  fFlipped=false;
+  document.getElementById('fPg').textContent=(fIdx+1)+' / '+fList.length;
+  document.getElementById('fHrt').textContent='❤️'.repeat(fHrts)+'🖤'.repeat(5-fHrts);
+  document.getElementById('fProg').style.width=(fIdx/fList.length*100)+'%';
+  document.getElementById('fVNum').textContent='잠언 17:'+v.v;
+  document.getElementById('fVText').textContent=v.t;
+  document.getElementById('fVText').style.display='none';
+  document.getElementById('fHint').style.display='block';
+  document.getElementById('fBtns').style.display='none';
+  const favs=S.get('favs')||[];
+  const fb=document.getElementById('favBtn');
+  fb.textContent=favs.includes(v.v)?'★':'☆';
+  fb.classList.toggle('on',favs.includes(v.v));
+  const memos=S.get('memos')||{};
+  document.getElementById('mTA').value=memos[td()+'_'+v.v]||'';
+  document.getElementById('mSave').textContent='저장';
+}
+
+function flip(){
+  if(fFlipped)return;
+  fFlipped=true;
+  document.getElementById('fVText').style.display='block';
+  document.getElementById('fHint').style.display='none';
+  document.getElementById('fBtns').style.display='flex';
+}
+
+function ans(knew){
+  const v=fList[fIdx];
+  if(knew){fOK++;fXP+=5;markDone(v.v);rmWeak(v.v);}
+  else{fHrts=Math.max(0,fHrts-1);addWeak(v.v);}
+  fIdx++;updStreak();renderF();
+}
+
+function togFav(e){
+  e.stopPropagation();
+  const v=fList[fIdx];if(!v)return;
+  let favs=S.get('favs')||[];
+  favs=favs.includes(v.v)?favs.filter(f=>f!==v.v):[...favs,v.v];
+  S.set('favs',favs);
+  document.getElementById('favBtn').textContent=favs.includes(v.v)?'★':'☆';
+  document.getElementById('favBtn').classList.toggle('on',favs.includes(v.v));
+  updHome();
+}
+
+function saveMemo(){
+  const v=fList[fIdx];if(!v)return;
+  const text=document.getElementById('mTA').value.trim();if(!text)return;
+  const memos=S.get('memos')||{};
+  memos[td()+'_'+v.v]=text;
+  S.set('memos',memos);
+  let di=S.get('di')||{};
+  if(!di[td()])di[td()]=[];
+  if(!di[td()].includes(v.v))di[td()].push(v.v);
+  S.set('di',di);
+  let sd=S.get('studyDates')||[];
+  if(!sd.includes(td())){sd.push(td());S.set('studyDates',sd);}
+  document.getElementById('mSave').textContent='✅';
+  setTimeout(()=>document.getElementById('mSave').textContent='저장',1500);
+}
+
+// ── 완료 ──
+function showDone(type){
+  const xp=type==='quiz'?qXP:fXP,ok=type==='quiz'?qOK:fOK,wk=(S.get('weak')||[]).length;
+  document.getElementById('dXP').textContent=xp;
+  document.getElementById('dOK').textContent=ok;
+  document.getElementById('dWK').textContent=wk;
+  document.getElementById('doneT').textContent=type==='quiz'?'빈칸 퀴즈 완료! ✏️':'플래시카드 완료! 📖';
+  document.getElementById('doneE').textContent=wk>0?'🎯':'🎉';
+  document.getElementById('retryBtn').style.display=wk>0?'block':'none';
+  document.getElementById('done').classList.add('show');
+  updHome();
+}
+function closeDone(){document.getElementById('done').classList.remove('show');goHome();}
+function retryWeak(){document.getElementById('done').classList.remove('show');startFlash('weak');}
+
+// ── 캘린더 ──
+function renderCal(){
+  const now=new Date();
+  if(calY===undefined){calY=now.getFullYear();calM=now.getMonth();}
+  const sd=S.get('studyDates')||[];
+  const memos=S.get('memos')||{};
+  const md=[...new Set(Object.keys(memos).map(k=>k.slice(0,10)))];
+  const ts=td();
+  document.getElementById('calT').textContent=calY+'년 '+(calM+1)+'월';
+  const first=new Date(calY,calM,1).getDay();
+  const days=new Date(calY,calM+1,0).getDate();
+  let html='';
+  for(let i=0;i<first;i++)html+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const it=ds===ts,hm=md.includes(ds),hs=sd.includes(ds);
+    html+=`<div class="calDay${it?' td':hm?' hm':hs?' st':''}" onclick="showMemos('${ds}')">${d}</div>`;
+  }
+  document.getElementById('calG').innerHTML=html;
+  showMemos(ts);
+}
+function showMemos(ds){
+  const memos=S.get('memos')||{};
+  const entries=Object.entries(memos).filter(([k])=>k.startsWith(ds));
+  const list=document.getElementById('mList');
+  if(!entries.length){list.innerHTML=`<div class="emptyMsg">${ds}<br>기록된 묵상이 없어요</div>`;return;}
+  list.innerHTML=entries.map(([k,val])=>{
+    const vn=k.split('_')[1];
+    const verse=V.find(vv=>vv.v==vn);
+    return `<div class="memoItem"><div class="miDate">📅 ${ds}</div><div class="miVerse">잠언 17:${vn} — ${verse?verse.t.slice(0,20)+'...':''}</div><div class="miText">${val}</div></div>`;
+  }).join('');
+}
+function chMon(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
+
+// ── 즐겨찾기 ──
+function renderFav(){
+  const favs=S.get('favs')||[];
+  const list=document.getElementById('fList');
+  if(!favs.length){list.innerHTML='<div class="emptyMsg">⭐ 아직 즐겨찾기한 말씀이 없어요<br><br>플래시카드에서 ☆ 버튼을 탭해<br>마음에 새긴 말씀을 저장해보세요</div>';return;}
+  list.innerHTML=[...favs].sort((a,b)=>a-b).map(vn=>{
+    const v=V.find(vv=>vv.v===vn);if(!v)return'';
+    return `<div class="favItem"><button class="fiRm" onclick="rmFav(${vn})">★</button><div class="fiNum">잠언 17:${v.v}</div><div class="fiText">${v.t}</div></div>`;
+  }).join('');
+}
+function rmFav(vn){S.set('favs',(S.get('favs')||[]).filter(f=>f!==vn));renderFav();updHome();}
+
+updHome();
+</script>
+</body>
+</html>
