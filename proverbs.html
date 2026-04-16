@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="잠언암기">
+<meta name="theme-color" content="#050c1a">
+<title>잠언 암기 (개역개정)</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#050c1a; --bg2:#0d1b3e; --bg3:#1a2744;
+  --accent:#2d5be3; --accent2:#60a5fa;
+  --gold:#f0c040; --green:#86efac; --red:#fca5a5;
+  --text:#e8edf8; --muted:#8ca0c8; --border:#1e3a6e;
+  --font:Georgia,'Batang','Malgun Gothic',serif;
+}
+html{height:100%}
+body{
+  min-height:100%; background:var(--bg);
+  color:var(--text); font-family:var(--font);
+  display:flex; flex-direction:column; align-items:center;
+  padding-bottom:40px; overflow-x:hidden;
+}
+
+/* ── HEADER ── */
+#header{
+  position:sticky; top:0; z-index:100;
+  width:100%; max-width:520px;
+  background:rgba(5,12,26,.96); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px 10px;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.chip{
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:20px; color:#93b4ff;
+  padding:6px 14px; font-size:13px; cursor:pointer;
+  font-family:var(--font); white-space:nowrap;
+}
+#xpBadge{color:var(--gold)}
+#heartsRow{font-size:18px; display:flex; gap:1px}
+
+/* ── CHAPTER PANEL ── */
+#chPanel{
+  display:none; width:100%; max-width:520px;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:14px 16px 12px;
+}
+#chGrid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px}
+.chBtn{
+  border-radius:8px; padding:8px 2px; cursor:pointer;
+  font-size:13px; font-family:var(--font);
+  border:2px solid transparent; transition:all .2s;
+  background:var(--bg2); color:var(--muted);
+}
+.chBtn.today{border-color:var(--gold)!important}
+.chBtn.active{background:var(--accent); color:#fff}
+#chNote{color:var(--gold); font-size:11px; text-align:center; margin-top:8px}
+
+/* ── PROGRESS ── */
+#pgWrap{
+  width:100%; max-width:520px;
+  display:flex; align-items:center; gap:8px;
+  padding:10px 16px 0;
+}
+#pgBar{flex:1; height:7px; background:var(--bg3); border-radius:4px; overflow:hidden}
+#pgFill{
+  height:100%; width:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:4px; transition:width .4s;
+}
+#pgLabel{font-size:12px; color:var(--muted); min-width:36px; text-align:right}
+
+/* ── MODE TABS ── */
+#modeTabs{
+  width:100%; max-width:520px;
+  display:flex; gap:6px; padding:10px 16px 0;
+  overflow-x:auto; scrollbar-width:none;
+}
+#modeTabs::-webkit-scrollbar{display:none}
+.mTab{
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:20px; color:var(--muted);
+  padding:6px 14px; font-size:13px; cursor:pointer;
+  white-space:nowrap; font-family:var(--font); transition:all .2s;
+  flex-shrink:0;
+}
+.mTab.on{background:var(--accent); border-color:#5b8df0; color:#fff}
+
+/* ── MAIN ── */
+#main{width:100%; max-width:520px; padding:14px 16px 0; display:flex; flex-direction:column; gap:12px}
+#verseLabel{color:var(--gold); font-size:13px; letter-spacing:1px}
+
+/* ── CARD ── */
+#card{
+  background:linear-gradient(135deg,#0d1b3e,#112040);
+  border:1px solid var(--border); border-radius:20px;
+  padding:22px 18px; box-shadow:0 8px 32px rgba(0,0,0,.5);
+  display:flex; flex-direction:column; gap:14px;
+}
+.vText{
+  font-size:18px; line-height:2.1; color:var(--text);
+  text-align:center; letter-spacing:.3px;
+}
+.hint{font-size:13px; color:var(--muted); text-align:center}
+.recallFirst{
+  background:#0a1628; border-radius:10px;
+  padding:10px 16px; color:#5b8df0;
+  font-size:16px; text-align:center; line-height:2;
+}
+
+/* 빈칸 인라인 */
+.blank-line{
+  font-size:18px; line-height:2.3; text-align:center;
+  letter-spacing:.3px; color:var(--text);
+}
+.blank-box{
+  display:inline-block;
+  border-bottom:2px solid var(--accent2);
+  min-width:80px; text-align:center;
+  color:var(--accent2); font-weight:600;
+  vertical-align:bottom; padding:0 4px;
+}
+.blank-input-wrap{display:flex; gap:8px; align-items:stretch}
+input.word-input{
+  background:#0a1628; border:2px solid var(--border);
+  border-radius:12px; color:var(--text);
+  padding:12px 16px; font-size:17px; flex:1; outline:none;
+  font-family:var(--font); transition:border-color .2s;
+  text-align:center;
+}
+input.word-input:focus{border-color:var(--accent)}
+
+/* choices (객관식) */
+#choices{display:flex; flex-direction:column; gap:8px}
+.choiceBtn{
+  background:var(--bg3); border:2px solid var(--border);
+  border-radius:12px; color:var(--text);
+  padding:13px 16px; font-size:16px; cursor:pointer;
+  font-family:var(--font); text-align:left; transition:all .2s;
+  line-height:1.6;
+}
+.choiceBtn:active{transform:scale(.98)}
+.choiceBtn.correct{background:rgba(34,197,94,.2); border-color:rgba(34,197,94,.6); color:var(--green)}
+.choiceBtn.wrong{background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.5); color:var(--red)}
+.choiceBtn.reveal{background:rgba(34,197,94,.1); border-color:rgba(34,197,94,.4)}
+
+/* textarea */
+textarea{
+  background:#0a1628; border:2px solid var(--border);
+  border-radius:12px; color:var(--text);
+  padding:12px 16px; font-size:16px; width:100%;
+  outline:none; resize:none; font-family:var(--font);
+  line-height:2; transition:border-color .2s;
+}
+textarea:focus{border-color:var(--accent)}
+
+/* feedback */
+.okBox{
+  background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.4);
+  border-radius:12px; padding:12px 16px;
+  color:var(--green); font-size:15px;
+}
+.ngBox{
+  background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.35);
+  border-radius:12px; padding:12px 16px;
+  color:var(--red); font-size:14px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.answerText{
+  background:#060d1f; border-radius:8px; padding:10px 14px;
+  color:#93c5fd; font-size:14px; line-height:2;
+}
+
+/* buttons */
+.btn{
+  background:linear-gradient(135deg,#2d5be3,#1e40af);
+  border:none; border-radius:14px; color:#fff;
+  padding:14px; font-size:16px; cursor:pointer; width:100%;
+  font-family:var(--font); font-weight:700; letter-spacing:.5px;
+  box-shadow:0 4px 12px rgba(45,91,227,.4); transition:opacity .15s;
+}
+.btn:active{opacity:.82}
+.btn.ghost{background:var(--bg3); box-shadow:none; font-size:14px; color:var(--muted)}
+
+/* streak */
+#streakToast{
+  display:none; text-align:center;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  border-radius:20px; padding:8px 20px;
+  color:#fff; font-size:13px; font-weight:700;
+  box-shadow:0 4px 12px rgba(124,58,237,.4);
+}
+
+/* done */
+#doneScreen{
+  display:none; width:100%; max-width:400px;
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:24px; padding:32px 24px;
+  flex-direction:column; align-items:center; gap:16px;
+  margin:40px 16px; box-shadow:0 12px 40px rgba(0,0,0,.6);
+}
+#doneScreen h2{font-size:24px; color:var(--text)}
+.statRow{display:flex; gap:28px; margin-top:4px}
+.stat{display:flex; flex-direction:column; align-items:center; gap:3px}
+.statN{font-size:30px; font-weight:700; color:var(--gold)}
+.statL{font-size:12px; color:var(--muted)}
+
+#footer{font-size:11px; color:#3d5a8a; text-align:center; padding:12px 16px 0; width:100%; max-width:520px}
+
+@keyframes pop{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .28s ease}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <button class="chip" onclick="toggleCh()">📅 잠언 <span id="chLabel">1</span>장</button>
+  <div id="heartsRow"></div>
+  <div class="chip" id="xpBadge">✨ <span id="xpLabel">0</span> XP</div>
+</div>
+
+<div id="chPanel">
+  <div id="chGrid"></div>
+  <p id="chNote"></p>
+</div>
+
+<div id="pgWrap">
+  <div id="pgBar"><div id="pgFill"></div></div>
+  <span id="pgLabel">0/0</span>
+</div>
+
+<div id="modeTabs">
+  <button class="mTab" data-m="read">📖 읽기</button>
+  <button class="mTab" data-m="blank">✏️ 빈칸채우기</button>
+  <button class="mTab" data-m="typing">⌨️ 받아쓰기</button>
+  <button class="mTab" data-m="recall">🧠 암송</button>
+</div>
+
+<div id="main">
+  <div id="verseLabel"></div>
+  <div id="card"></div>
+  <div id="streakToast"></div>
+  <div id="footer"></div>
+</div>
+
+<div id="doneScreen">
+  <div style="font-size:60px">🎉</div>
+  <h2>훈련 완료!</h2>
+  <p id="doneSubtitle" style="color:var(--muted);font-size:14px"></p>
+  <div class="statRow">
+    <div class="stat"><div class="statN" id="dXP">0</div><div class="statL">✨ XP</div></div>
+    <div class="stat"><div class="statN" id="dStreak">0</div><div class="statL">🔥 최고연속</div></div>
+    <div class="stat"><div class="statN" id="dHearts">0</div><div class="statL">❤️ 남음</div></div>
+  </div>
+  <button class="btn" onclick="restart()">다시 훈련하기</button>
+  <button class="btn" onclick="nextMode()" style="background:var(--bg3);margin-top:4px">다음 단계 →</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// 개역개정 잠언 데이터
+// 각 절마다 keys: 빈칸이 될 핵심단어(들) 지정
+// keys 배열 중 하나를 랜덤으로 빈칸으로 만듦
+// ══════════════════════════════════════════════
+const DATA = {
+ 1:[
+  {v:7, t:"여호와를 경외하는 것이 지식의 근본이거늘 미련한 자는 지혜와 훈계를 멸시하느니라", keys:["경외","지식","근본","멸시"]},
+  {v:8, t:"내 아들아 네 아버지의 훈계를 들으며 네 어머니의 법을 떠나지 말라", keys:["훈계","법"]},
+  {v:9, t:"이는 네 머리의 아름다운 관이요 네 목의 금 사슬이니라", keys:["관","금","사슬"]},
+  {v:10, t:"내 아들아 악한 자가 너를 꾈지라도 따르지 말라", keys:["악한","꾈지라도","따르지"]},
+  {v:19, t:"이익을 탐하는 모든 자의 길은 다 이러하여 자기의 생명을 잃게 하느니라", keys:["이익","탐하는","생명"]},
+  {v:33, t:"오직 내 말을 듣는 자는 평안히 살며 재앙의 두려움이 없이 안전하리라", keys:["평안히","재앙","안전"]},
+ ],
+ 2:[
+  {v:4, t:"은을 구하는 것 같이 그것을 구하며 감추어진 보배를 찾는 것 같이 그것을 찾으면", keys:["은","보배"]},
+  {v:5, t:"여호와 경외하기를 깨달으며 하나님을 알게 되리니", keys:["경외","하나님"]},
+  {v:6, t:"대저 여호와는 지혜를 주시며 지식과 명철은 그의 입에서 나오며", keys:["지혜","지식","명철"]},
+  {v:7, t:"그는 정직한 자를 위하여 완전한 지혜를 예비하시며 행실이 온전한 자에게 방패가 되시나니", keys:["정직한","지혜","방패"]},
+  {v:9, t:"그런즉 네가 공의와 정의와 정직 곧 모든 선한 길을 깨달을 것이라", keys:["공의","정의","정직"]},
+  {v:20, t:"지혜가 너를 선한 자의 길로 행하게 하며 또 의인의 길을 지키게 하리니", keys:["지혜","선한","의인"]},
+ ],
+ 3:[
+  {v:1, t:"내 아들아 나의 법을 잊어버리지 말고 네 마음으로 나의 명령을 지키라", keys:["법","명령"]},
+  {v:3, t:"인자와 진리가 네게서 떠나지 말게 하고 그것을 네 목에 매며 네 마음판에 새기라", keys:["인자","진리","마음판"]},
+  {v:5, t:"너는 마음을 다하여 여호와를 신뢰하고 네 명철을 의지하지 말라", keys:["신뢰","명철","의지"]},
+  {v:6, t:"너는 범사에 그를 인정하라 그리하면 네 길을 지도하시리라", keys:["범사","인정","지도"]},
+  {v:7, t:"스스로 지혜롭게 여기지 말지어다 여호와를 경외하며 악을 떠날지어다", keys:["지혜롭게","경외","악"]},
+  {v:9, t:"네 재물과 네 소산물의 처음 익은 열매로 여호와를 공경하라", keys:["재물","소산물","열매","공경"]},
+  {v:10, t:"그리하면 네 창고가 가득히 차고 네 포도즙 틀에 새 포도즙이 넘치리라", keys:["창고","포도즙"]},
+  {v:12, t:"대저 여호와께서 그 사랑하시는 자를 징계하시기를 마치 아비가 그 기뻐하는 아들을 징계함 같이 하시느니라", keys:["사랑하시는","징계"]},
+  {v:15, t:"지혜는 진주보다 귀하니 네가 사모하는 모든 것으로도 이에 비교할 수 없도다", keys:["진주","귀하니","사모"]},
+  {v:17, t:"그 길은 즐거운 길이요 그의 지름길은 다 평강이니라", keys:["즐거운","평강"]},
+  {v:18, t:"지혜는 그 얻은 자에게 생명 나무라 지혜를 가진 자는 복되도다", keys:["생명","나무","복"]},
+  {v:27, t:"네 손이 선을 베풀 힘이 있거든 마땅히 받을 자에게 베풀기를 아끼지 말며", keys:["선","베풀","아끼지"]},
+  {v:34, t:"진실로 그는 거만한 자를 비웃으시며 겸손한 자에게 은혜를 베푸시나니", keys:["거만한","겸손한","은혜"]},
+  {v:35, t:"지혜로운 자는 영광을 기업으로 받거니와 미련한 자의 영달함은 수치가 되느니라", keys:["영광","기업","수치"]},
+ ],
+ 4:[
+  {v:5, t:"지혜를 얻으며 명철을 얻으라 내 입의 말을 잊지 말며 어기지 말라", keys:["지혜","명철"]},
+  {v:7, t:"지혜가 제일이니 지혜를 얻으라 네가 얻은 모든 것을 가지고 명철을 얻을지니라", keys:["지혜","제일","명철"]},
+  {v:13, t:"훈계를 굳게 잡아 놓치지 말고 지키라 이것이 네 생명이니라", keys:["훈계","생명"]},
+  {v:18, t:"의인의 길은 돋는 햇살 같아서 크게 빛나 한낮의 광명에 이르거니와", keys:["의인","햇살","광명"]},
+  {v:19, t:"악인의 길은 어둠 같아서 그가 걸려 넘어져도 그것이 무엇인지 깨닫지 못하느니라", keys:["악인","어둠","깨닫지"]},
+  {v:23, t:"모든 지킬 만한 것 중에 더욱 네 마음을 지키라 생명의 근원이 이에서 남이니라", keys:["마음","생명","근원"]},
+  {v:27, t:"좌로나 우로나 치우치지 말고 네 발을 악에서 떠나게 하라", keys:["치우치지","악"]},
+ ],
+ 5:[
+  {v:21, t:"대저 사람의 길은 여호와의 눈 앞에 있나니 그가 그 사람의 모든 길을 평탄하게 하시느니라", keys:["여호와","눈","평탄"]},
+  {v:22, t:"악인은 자기의 악에 걸리며 그 죄의 줄에 매이나니", keys:["악","죄","줄"]},
+  {v:23, t:"그는 훈계를 받지 아니함으로 말미암아 죽겠고 심히 미련함으로 말미암아 혼미하게 되느니라", keys:["훈계","미련","혼미"]},
+ ],
+ 6:[
+  {v:6, t:"게으른 자여 개미에게 가서 그가 하는 것을 보고 지혜를 얻으라", keys:["게으른","개미","지혜"]},
+  {v:9, t:"게으른 자여 네가 어느 때까지 누워 있겠느냐 네가 어느 때에 잠이 깨어 일어나겠느냐", keys:["게으른","누워","잠"]},
+  {v:11, t:"네 빈궁이 강도 같이 오며 네 곤핍이 군사 같이 이르리라", keys:["빈궁","강도","곤핍","군사"]},
+  {v:16, t:"여호와께서 미워하시는 것 곧 그의 마음에 싫어하시는 것이 예닐곱 가지이니", keys:["미워하시는","예닐곱"]},
+  {v:17, t:"곧 교만한 눈과 거짓된 혀와 무죄한 자의 피를 흘리는 손과", keys:["교만한","거짓된","무죄한","피"]},
+  {v:18, t:"악한 계교를 꾀하는 마음과 빨리 악으로 달려가는 발과", keys:["계교","악","발"]},
+  {v:19, t:"거짓을 말하는 망령된 증인과 및 형제 사이를 이간하는 자이니라", keys:["거짓","망령된","이간"]},
+  {v:23, t:"대저 명령은 등불이요 법은 빛이요 훈계의 책망은 곧 생명의 길이라", keys:["명령","등불","법","빛","생명"]},
+ ],
+ 7:[
+  {v:1, t:"내 아들아 내 말을 지키며 내 계명을 간직하라", keys:["말","계명","간직"]},
+  {v:2, t:"내 계명을 지켜 살며 내 법을 네 눈동자처럼 지키라", keys:["계명","법","눈동자"]},
+  {v:3, t:"이것을 네 손가락에 매며 이것을 네 마음판에 새기라", keys:["손가락","마음판","새기라"]},
+  {v:4, t:"지혜에게 너는 내 누이라 하며 명철에게 너는 내 친족이라 하라", keys:["지혜","누이","명철","친족"]},
+ ],
+ 8:[
+  {v:11, t:"대저 지혜는 진주보다 나으므로 원하는 모든 것을 이에 비교할 수 없음이니라", keys:["지혜","진주","비교"]},
+  {v:13, t:"여호와를 경외하는 것은 악을 미워하는 것이라 나는 교만과 거만과 악한 행실과 패역한 입을 미워하느니라", keys:["경외","악","교만","거만","패역"]},
+  {v:17, t:"나를 사랑하는 자들이 나의 사랑을 입으며 나를 간절히 찾는 자가 나를 만날 것이니라", keys:["사랑","간절히","찾는"]},
+  {v:35, t:"나를 얻는 자는 생명을 얻고 여호와께 은총을 얻을 것임이니라", keys:["생명","은총"]},
+  {v:36, t:"그러나 나를 잃는 자는 자기의 영혼을 해하는 자라 나를 미워하는 자는 사망을 사랑하는 것이니라", keys:["영혼","사망"]},
+ ],
+ 9:[
+  {v:10, t:"여호와를 경외하는 것이 지혜의 근본이요 거룩하신 자를 아는 것이 명철이니라", keys:["경외","지혜","근본","명철"]},
+  {v:11, t:"나 지혜로 말미암아 네 날이 많아질 것이요 네 생명의 해가 네게 더하리라", keys:["지혜","생명"]},
+  {v:12, t:"네가 만일 지혜로우면 그 지혜가 네게 유익할 것이나 네가 만일 거만하면 너 홀로 해를 당하리라", keys:["지혜","유익","거만"]},
+ ],
+ 10:[
+  {v:1, t:"지혜로운 아들은 아비를 기쁘게 하거니와 미련한 아들은 어미의 근심이니라", keys:["지혜로운","기쁘게","미련한","근심"]},
+  {v:4, t:"손을 게으르게 놀리는 자는 가난하게 되고 손이 부지런한 자는 부하게 되느니라", keys:["게으르게","가난","부지런한","부"]},
+  {v:7, t:"의인을 기념할 때에는 칭찬하거니와 악인의 이름은 썩으리라", keys:["의인","칭찬","악인","썩으리라"]},
+  {v:12, t:"미움은 다툼을 일으켜도 사랑은 모든 허물을 가리느니라", keys:["미움","사랑","허물"]},
+  {v:19, t:"말이 많으면 허물을 면하기 어려우나 그 입술을 제어하는 자는 지혜가 있느니라", keys:["허물","입술","제어","지혜"]},
+  {v:22, t:"여호와께서 주시는 복은 사람을 부하게 하고 근심을 겸하여 주지 아니하시느니라", keys:["복","근심"]},
+ ],
+ 11:[
+  {v:1, t:"속이는 저울은 여호와께서 미워하셔도 공평한 추는 그가 기뻐하시느니라", keys:["저울","미워","공평한","추"]},
+  {v:2, t:"교만이 오면 욕도 오거니와 겸손한 자에게는 지혜가 있느니라", keys:["교만","겸손한","지혜"]},
+  {v:14, t:"지략이 없으면 백성이 망하여도 지략이 많으면 평안을 누리느니라", keys:["지략","백성","망","평안"]},
+  {v:24, t:"흩어 구제하여도 더욱 부하게 되는 일이 있나니 과도히 아껴도 가난하게 될 뿐이니라", keys:["구제","부","아껴도","가난"]},
+  {v:25, t:"구제를 좋아하는 자는 풍족하여질 것이요 남을 윤택하게 하는 자는 자기도 윤택하여지리라", keys:["구제","풍족","윤택"]},
+  {v:30, t:"의인의 열매는 생명 나무라 지혜로운 자는 사람을 얻느니라", keys:["열매","생명","나무","지혜"]},
+ ],
+ 12:[
+  {v:1, t:"훈계를 좋아하는 자는 지식을 좋아하거니와 징계를 싫어하는 자는 짐승과 같으니라", keys:["훈계","지식","징계","짐승"]},
+  {v:4, t:"어진 여인은 그 지아비의 면류관이나 욕을 끼치는 여인은 그 지아비의 뼈가 썩음 같게 하느니라", keys:["어진","면류관","욕","뼈","썩음"]},
+  {v:15, t:"어리석은 자는 자기 행위를 바른 줄로 여기나 지혜로운 자는 권고를 듣느니라", keys:["어리석은","지혜로운","권고"]},
+  {v:25, t:"근심이 사람의 마음에 있으면 그것으로 번뇌하게 되나 선한 말은 그것을 즐겁게 하느니라", keys:["근심","번뇌","선한","즐겁게"]},
+ ],
+ 13:[
+  {v:3, t:"입을 지키는 자는 자기의 생명을 보전하나 입술을 크게 벌리는 자에게는 멸망이 오느니라", keys:["입","생명","보전","멸망"]},
+  {v:12, t:"소망이 더디 이루어지면 그것이 마음을 상하게 하거니와 소원이 이루어지는 것은 곧 생명 나무니라", keys:["소망","마음","소원","생명","나무"]},
+  {v:20, t:"지혜로운 자와 동행하면 지혜를 얻고 미련한 자와 사귀면 해를 받느니라", keys:["지혜","동행","미련한","해"]},
+  {v:24, t:"매를 아끼는 자는 그의 자식을 미워함이라 자식을 사랑하는 자는 근실히 징계하느니라", keys:["매","자식","사랑","징계"]},
+ ],
+ 14:[
+  {v:1, t:"지혜로운 여인은 자기 집을 세우되 미련한 여인은 자기 손으로 그것을 허느니라", keys:["지혜로운","집","미련한","허느니라"]},
+  {v:12, t:"어떤 길은 사람이 보기에 바르나 필경은 사망의 길이니라", keys:["바르나","사망"]},
+  {v:26, t:"여호와를 경외하는 자에게는 견고한 의뢰가 있나니 그 자녀들에게 피난처가 있으리라", keys:["경외","의뢰","피난처"]},
+  {v:29, t:"노하기를 더디 하는 자는 크게 명철하여도 마음이 조급한 자는 어리석음을 나타내느니라", keys:["노하기","명철","조급한","어리석음"]},
+  {v:34, t:"공의는 나라를 영화롭게 하고 죄는 백성을 욕되게 하느니라", keys:["공의","영화","죄","욕"]},
+ ],
+ 15:[
+  {v:1, t:"유순한 대답은 분노를 쉬게 하여도 과격한 말은 노를 격동하느니라", keys:["유순한","분노","과격한","노"]},
+  {v:3, t:"여호와의 눈은 어디서든지 악인과 선인을 감찰하시느니라", keys:["눈","악인","선인","감찰"]},
+  {v:13, t:"마음의 즐거움은 얼굴을 빛나게 하여도 마음의 근심은 심령을 상하게 하느니라", keys:["즐거움","근심","심령"]},
+  {v:17, t:"채소를 먹으며 서로 사랑하는 것이 살진 소를 먹으며 서로 미워하는 것보다 나으니라", keys:["채소","사랑","살진","미워"]},
+  {v:29, t:"여호와는 악인을 멀리 하시고 의인의 기도를 들으시느니라", keys:["악인","의인","기도"]},
+  {v:33, t:"여호와를 경외하는 것은 지혜의 훈계라 겸손은 존귀의 앞잡이니라", keys:["경외","지혜","겸손","존귀"]},
+ ],
+ 16:[
+  {v:1, t:"마음의 경영은 사람에게 있어도 말의 응답은 여호와께로부터 나오느니라", keys:["경영","응답","여호와"]},
+  {v:3, t:"너의 행사를 여호와께 맡기라 그리하면 네가 경영하는 것이 이루어지리라", keys:["행사","맡기라","경영"]},
+  {v:7, t:"사람의 행위가 여호와를 기쁘시게 하면 그 사람의 원수라도 그와 더불어 화목하게 하시느니라", keys:["행위","기쁘시게","원수","화목"]},
+  {v:9, t:"사람이 마음으로 자기의 길을 계획할지라도 그의 걸음을 인도하시는 이는 여호와시니라", keys:["마음","계획","걸음","인도"]},
+  {v:18, t:"교만은 패망의 선봉이요 거만한 마음은 넘어짐의 앞잡이니라", keys:["교만","패망","거만","넘어짐"]},
+  {v:32, t:"노하기를 더디 하는 자는 용사보다 낫고 자기의 마음을 다스리는 자는 성을 빼앗는 자보다 나으니라", keys:["노하기","용사","마음","다스리는","성"]},
+ ],
+ 17:[
+  {v:1, t:"마른 떡 한 조각만 있고도 화목하는 것이 제육이 집에 가득하고 다투는 것보다 나으니라", keys:["떡","화목","다투는"]},
+  {v:9, t:"허물을 덮어 주는 자는 사랑을 구하는 자요 그것을 거듭 말하는 자는 친한 벗을 이간하는 자니라", keys:["허물","사랑","이간"]},
+  {v:17, t:"친구는 사랑이 끊이지 아니하고 형제는 위급한 때를 위하여 났느니라", keys:["친구","사랑","형제","위급"]},
+  {v:22, t:"마음의 즐거움은 양약이라도 심령의 근심은 뼈를 마르게 하느니라", keys:["즐거움","양약","근심","뼈"]},
+  {v:27, t:"말을 아끼는 자는 지식이 있고 성품이 냉철한 자는 명철하니라", keys:["말","지식","성품","냉철","명철"]},
+  {v:28, t:"미련한 자라도 잠잠하면 지혜로운 자로 여겨지고 그의 입술을 닫으면 슬기로운 자로 여겨지느니라", keys:["미련한","잠잠","지혜로운","입술"]},
+ ],
+ 18:[
+  {v:10, t:"여호와의 이름은 견고한 망대라 의인은 그리로 달려가서 안전함을 얻느니라", keys:["이름","망대","의인","안전"]},
+  {v:12, t:"사람의 마음의 교만은 멸망의 선봉이요 겸손은 존귀의 길잡이니라", keys:["교만","멸망","겸손","존귀"]},
+  {v:13, t:"사연을 듣기 전에 대답하는 자는 미련하여 욕을 당하느니라", keys:["사연","대답","미련","욕"]},
+  {v:21, t:"죽고 사는 것이 혀의 힘에 달렸나니 혀를 쓰기 좋아하는 자는 혀의 열매를 먹으리라", keys:["혀","힘","열매"]},
+  {v:24, t:"많은 친구를 얻는 자는 해를 당하게 되거니와 어떤 친구는 형제보다 친밀하니라", keys:["친구","형제","친밀"]},
+ ],
+ 19:[
+  {v:11, t:"노하기를 더디 하는 것이 사람의 슬기요 허물을 용서하는 것이 자기의 영광이니라", keys:["노하기","슬기","허물","용서","영광"]},
+  {v:17, t:"가난한 자를 불쌍히 여기는 것은 여호와께 꾸어 드리는 것이니 그의 선행을 그에게 갚아 주시리라", keys:["가난한","여호와","선행","갚아"]},
+  {v:20, t:"너는 권고를 들으며 훈계를 받으라 그리하면 네가 필경은 지혜롭게 되리라", keys:["권고","훈계","지혜"]},
+  {v:21, t:"사람의 마음에는 많은 계획이 있어도 오직 여호와의 뜻만이 완전히 서리라", keys:["계획","여호와","뜻"]},
+ ],
+ 20:[
+  {v:1, t:"포도주는 거만하게 하는 것이요 독주는 떠들게 하는 것이라 이에 미혹되는 자마다 지혜가 없느니라", keys:["포도주","거만","독주","미혹","지혜"]},
+  {v:7, t:"완전하게 행하는 자가 의인이라 그 후손에게 복이 있느니라", keys:["의인","후손","복"]},
+  {v:22, t:"너는 악을 갚겠다 말하지 말고 여호와를 기다리라 그가 너를 구원하시리라", keys:["악","여호와","기다리라","구원"]},
+  {v:27, t:"사람의 영혼은 여호와의 등불이라 사람의 깊은 속을 살피느니라", keys:["영혼","등불","살피느니라"]},
+ ],
+ 21:[
+  {v:1, t:"왕의 마음이 여호와의 손에 있음이 마치 물줄기 같아서 그가 임의로 인도하시느니라", keys:["왕","여호와","물줄기","인도"]},
+  {v:2, t:"사람의 행위가 자기 보기에는 모두 정직하여도 여호와는 마음을 감찰하시느니라", keys:["행위","정직","마음","감찰"]},
+  {v:21, t:"공의와 인자를 따라 구하는 자는 생명과 공의와 영광을 얻느니라", keys:["공의","인자","생명","영광"]},
+  {v:23, t:"입과 혀를 지키는 자는 자기의 영혼을 환난에서 보전하느니라", keys:["입","혀","영혼","환난","보전"]},
+ ],
+ 22:[
+  {v:1, t:"많은 재물보다 명예를 택할 것이요 은이나 금보다 은총을 더욱 택할 것이니라", keys:["재물","명예","은총"]},
+  {v:4, t:"겸손과 여호와를 경외함의 보상은 재물과 영광과 생명이니라", keys:["겸손","경외","보상","재물","영광","생명"]},
+  {v:6, t:"마땅히 행할 길을 아이에게 가르치라 그리하면 늙어도 그것을 떠나지 아니하리라", keys:["길","아이","가르치라","늙어도"]},
+  {v:9, t:"선한 눈을 가진 자는 복을 받으리니 이는 양식을 가난한 자에게 줌이니라", keys:["선한","눈","복","양식","가난"]},
+  {v:29, t:"네가 자기의 일에 능숙한 사람을 보았느냐 이러한 사람은 왕 앞에 설 것이요 천한 자 앞에 서지 아니하리라", keys:["능숙한","왕","천한"]},
+ ],
+ 23:[
+  {v:7, t:"대저 그 마음의 생각이 어떠하면 그 위인도 그러한즉 그가 너더러 먹고 마시라 할지라도 그 마음은 너와 함께 하지 아니함이라", keys:["마음","생각","위인"]},
+  {v:17, t:"네 마음으로 죄인의 형통을 부러워하지 말고 항상 여호와를 경외하라", keys:["죄인","형통","경외"]},
+  {v:26, t:"내 아들아 네 마음을 내게 주며 네 눈으로 내 길을 즐거워할지어다", keys:["마음","눈","길","즐거워"]},
+ ],
+ 24:[
+  {v:3, t:"집은 지혜로 말미암아 건축되고 명철로 말미암아 견고하게 되며", keys:["지혜","건축","명철","견고"]},
+  {v:4, t:"또 방들은 지식으로 말미암아 각종 귀하고 아름다운 보배로 채우게 되느니라", keys:["지식","귀하고","보배"]},
+  {v:10, t:"네가 만일 환난 날에 낙담하면 네 힘이 미약함을 보임이니라", keys:["환난","낙담","힘","미약"]},
+  {v:16, t:"대저 의인은 일곱 번 넘어질지라도 다시 일어나려니와 악인은 재앙으로 말미암아 엎드러지느니라", keys:["의인","일곱","넘어질","악인","재앙"]},
+ ],
+ 25:[
+  {v:11, t:"경우에 합당한 말은 아로새긴 은 쟁반에 금 사과니라", keys:["합당한","말","은","쟁반","금","사과"]},
+  {v:21, t:"네 원수가 배고파하거든 먹을 것을 주고 목말라하거든 물을 마시게 하라", keys:["원수","배고파","목말라","물"]},
+  {v:28, t:"자기의 마음을 제어하지 아니하는 자는 성읍이 무너지고 성벽이 없는 것 같으니라", keys:["마음","제어","성읍","성벽"]},
+ ],
+ 26:[
+  {v:12, t:"네가 스스로 지혜롭게 여기는 자를 보느냐 그보다 미련한 자에게 오히려 희망이 있느니라", keys:["지혜롭게","미련한","희망"]},
+  {v:20, t:"나무가 다하면 불이 꺼지고 말쟁이가 없어지면 다툼이 쉬느니라", keys:["나무","불","말쟁이","다툼"]},
+ ],
+ 27:[
+  {v:1, t:"너는 내일 일을 자랑하지 말라 하루 동안에 무슨 일이 일어날는지 네가 알 수 없음이니라", keys:["내일","자랑","하루"]},
+  {v:6, t:"친구의 통책은 충성에서 말미암은 것이나 원수의 입맞춤은 간사에서 말미암은 것이니라", keys:["친구","통책","충성","원수","입맞춤","간사"]},
+  {v:17, t:"철이 철을 날카롭게 하는 것 같이 사람이 그의 친구의 얼굴을 빛나게 하느니라", keys:["철","날카롭게","친구","얼굴","빛나게"]},
+  {v:19, t:"물에 얼굴이 비치는 것 같이 사람의 마음도 서로 비치느니라", keys:["물","얼굴","마음"]},
+ ],
+ 28:[
+  {v:1, t:"악인은 쫓아오는 자가 없어도 도망하나 의인은 사자 같이 담대하니라", keys:["악인","도망","의인","사자","담대"]},
+  {v:6, t:"성실하게 행하는 가난한 자는 사악하게 행하는 부자보다 나으니라", keys:["성실","가난한","사악","부자"]},
+  {v:13, t:"자기의 죄를 숨기는 자는 형통하지 못하나 죄를 자복하고 버리는 자는 불쌍히 여김을 받으리라", keys:["죄","숨기는","형통","자복","불쌍"]},
+  {v:25, t:"욕심이 많은 자는 다툼을 일으키나 여호와를 의지하는 자는 풍족하게 되느니라", keys:["욕심","다툼","의지","풍족"]},
+  {v:27, t:"가난한 자를 구제하는 자는 궁핍하지 아니하려니와 못 본 체하는 자에게는 저주가 많으리라", keys:["가난한","구제","궁핍","저주"]},
+ ],
+ 29:[
+  {v:11, t:"어리석은 자는 자기의 노를 다 드러내어도 지혜로운 자는 그 노를 억제하느니라", keys:["어리석은","노","지혜로운","억제"]},
+  {v:18, t:"묵시가 없으면 백성이 방자히 행하거니와 율법을 지키는 자는 복이 있느니라", keys:["묵시","백성","방자","율법","복"]},
+  {v:23, t:"사람이 교만하면 낮아지게 되겠고 마음이 겸손하면 영예를 얻으리라", keys:["교만","낮아지게","겸손","영예"]},
+  {v:25, t:"사람을 두려워하면 올무에 걸리게 되거니와 여호와를 의지하는 자는 안전하리라", keys:["두려워하면","올무","의지","안전"]},
+ ],
+ 30:[
+  {v:5, t:"하나님의 말씀은 다 순전하며 하나님은 그를 의지하는 자의 방패시니라", keys:["말씀","순전","의지","방패"]},
+  {v:8, t:"곧 헛된 것과 거짓말을 내게서 멀리 하옵시며 나를 가난하게도 마옵시고 부하게도 마옵시고 오직 필요한 양식으로 나를 먹이시옵소서", keys:["헛된","거짓말","가난","부","양식"]},
+  {v:9, t:"혹 내가 배불러서 하나님을 모른다 여호와가 누구냐 할까 하오며 혹 내가 가난하여 도둑질하고 내 하나님의 이름을 욕되게 할까 두려워함이니이다", keys:["배불러","하나님","가난","도둑질","이름"]},
+ ],
+ 31:[
+  {v:8, t:"너는 말 못하는 자와 모든 고독한 자의 송사를 위하여 입을 열지니라", keys:["고독한","송사","입"]},
+  {v:9, t:"너는 입을 열어 공의로 재판하여 곤고한 자와 궁핍한 자를 신원할지니라", keys:["공의","재판","곤고한","궁핍한","신원"]},
+  {v:10, t:"누가 현숙한 여인을 찾아 얻겠느냐 그의 값은 진주보다 더 하니라", keys:["현숙한","여인","진주"]},
+  {v:20, t:"그는 곤고한 자에게 손을 펴며 궁핍한 자를 위하여 손을 내밀며", keys:["곤고한","궁핍한","손"]},
+  {v:25, t:"능력과 존귀로 옷을 삼고 후일을 웃으며", keys:["능력","존귀","옷","후일"]},
+  {v:26, t:"입을 열어 지혜를 베풀며 그의 혀로 인애의 법을 말하며", keys:["지혜","혀","인애","법"]},
+  {v:30, t:"고운 것도 거짓되고 아름다운 것도 헛되나 오직 여호와를 경외하는 여자는 칭찬을 받을 것이라", keys:["고운","헛되나","경외","칭찬"]},
+  {v:31, t:"그 손의 열매가 그에게로 돌아갈 것이요 그 행한 일로 말미암아 성문에서 칭찬을 받으리라", keys:["열매","성문","칭찬"]},
+ ],
+};
+
+// ── 상태 ──
+const today = new Date();
+const todayCh = today.getDate(); // 1~31
+let ch = todayCh, mode = 'read', vi = 0;
+let hearts = 5, xp = 0, streak = 0, bestStreak = 0;
+let feedback = null, showAns = false;
+let blankKey = '', blankChoices = [];
+
+const MODES = [
+  {id:'read',    label:'📖 읽기'},
+  {id:'blank',   label:'✏️ 빈칸채우기'},
+  {id:'typing',  label:'⌨️ 받아쓰기'},
+  {id:'recall',  label:'🧠 암송'},
+];
+
+function verses(){ return DATA[ch] || []; }
+function verse(){ return verses()[vi]; }
+
+// ── 빈칸 핵심단어 선택 ──
+function pickBlank(v){
+  const keys = v.keys || [];
+  if(!keys.length) return keys[0];
+  return keys[Math.floor(Math.random()*keys.length)];
+}
+
+// ── 객관식 보기 생성 (빈칸 모드) ──
+function makeChoices(correct){
+  // 같은 장 전체 keys 풀에서 오답 추출
+  const pool = new Set();
+  verses().forEach(v2=>{
+    (v2.keys||[]).forEach(k=>{ if(k!==correct) pool.add(k); });
+  });
+  // 다른 장에서도 보충
+  Object.values(DATA).forEach(arr=>{
+    arr.forEach(v2=>{
+      (v2.keys||[]).forEach(k=>{ if(k!==correct) pool.add(k); });
+    });
+  });
+  const others = shuffle([...pool]).slice(0,3);
+  return shuffle([correct,...others]);
+}
+
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+// ── 초기화 ──
+function initSession(){
+  vi=0; hearts=5; xp=0; streak=0; bestStreak=0;
+  feedback=null; showAns=false;
+  document.getElementById('doneScreen').style.display='none';
+  document.getElementById('main').style.display='flex';
+  renderAll();
+}
+function resetVerse(){
+  feedback=null; showAns=false; blankKey=''; blankChoices=[];
+  if(mode==='blank' && verse()){
+    blankKey=pickBlank(verse());
+    blankChoices=makeChoices(blankKey);
+  }
+}
+
+// ── 렌더 전체 ──
+function renderAll(){
+  const vs=verses(), v=verse();
+  // header
+  document.getElementById('chLabel').textContent=ch;
+  renderHearts();
+  document.getElementById('xpLabel').textContent=xp;
+  // progress
+  const pct=vs.length?((vi)/vs.length*100):0;
+  document.getElementById('pgFill').style.width=pct+'%';
+  document.getElementById('pgLabel').textContent=vi+'/'+vs.length;
+  // mode tabs
+  document.querySelectorAll('.mTab').forEach(b=>{
+    b.classList.toggle('on', b.dataset.m===mode);
+  });
+  // verse label
+  document.getElementById('verseLabel').textContent=`잠언 ${ch}:${v?v.v:'-'} (개역개정)`;
+  // streak toast
+  const st=document.getElementById('streakToast');
+  if(streak>=3){ st.style.display='block'; st.textContent=`🔥 ${streak}연속 정답! +${Math.min(streak*2,20)} 보너스 XP`; }
+  else st.style.display='none';
+  // footer
+  document.getElementById('footer').textContent=
+    `오늘은 ${today.getMonth()+1}월 ${today.getDate()}일 · 오늘의 말씀: 잠언 ${todayCh}장 (개역개정)`;
+  // card
+  renderCard();
+}
+
+function renderHearts(){
+  document.getElementById('heartsRow').innerHTML=
+    Array.from({length:5}).map((_,i)=>
+      `<span style="opacity:${i<hearts?1:.2}">❤️</span>`).join('');
+}
+
+// ── 카드 렌더 ──
+function renderCard(){
+  const card=document.getElementById('card');
+  const v=verse();
+  if(!v){ renderDone(); return; }
+  card.innerHTML='';
+
+  if(mode==='read') renderRead(card,v);
+  else if(mode==='blank') renderBlank(card,v);
+  else if(mode==='typing') renderTyping(card,v);
+  else if(mode==='recall') renderRecall(card,v);
+}
+
+// 읽기
+function renderRead(card,v){
+  card.innerHTML=`
+    <p class="vText">${v.t}</p>
+    ${streak>=3?`<div style="text-align:center"><span style="background:#7c3aed;border-radius:20px;padding:4px 14px;font-size:13px;color:#fff">🔥 ${streak}연속!</span></div>`:''}
+    <button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+}
+
+// 빈칸채우기 (객관식)
+function renderBlank(card,v){
+  if(!blankKey) resetVerse();
+  const key=blankKey;
+  // 빈칸 표시 텍스트
+  const display=v.t.replace(new RegExp(key,'g'), `<span class="blank-box">${feedback?key:'　　　'}</span>`);
+
+  let html=`<p class="blank-line">${display}</p>`;
+
+  if(feedback===null){
+    html+=`<p class="hint">아래 보기에서 빈칸에 들어갈 핵심 단어를 고르세요</p>`;
+    html+=`<div id="choices">`;
+    blankChoices.forEach((c,i)=>{
+      html+=`<button class="choiceBtn" onclick="checkChoice('${c}')">${c}</button>`;
+    });
+    html+=`</div>`;
+  } else if(feedback==='correct'){
+    html+=`<div class="okBox">✅ 정답! <strong>${key}</strong></div>`;
+    html+=`<button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+  } else {
+    html+=`<div class="ngBox">❌ 정답은 <strong>${key}</strong> 입니다</div>`;
+    html+=`<button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+  }
+  card.innerHTML=html;
+}
+
+// 받아쓰기
+function renderTyping(card,v){
+  let html=`
+    <p class="hint">아래 절을 보고 그대로 입력하세요</p>
+    <p class="vText" style="color:#607090;font-size:15px">${v.t}</p>
+    <textarea id="tInput" rows="3" placeholder="여기에 입력...">${getInput()}</textarea>`;
+
+  if(feedback===null){
+    html+=`<button class="btn" onclick="checkText()">확인</button>`;
+  } else if(feedback==='correct'){
+    html+=`<div class="okBox">✅ 정확합니다!</div>`;
+    html+=`<button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+  } else {
+    html+=`<div class="ngBox">❌ 다시 확인하세요`;
+    if(showAns) html+=`<div class="answerText">${v.t}</div>`;
+    html+=`</div>`;
+    if(!showAns) html+=`<button class="btn ghost" onclick="revealAns()">정답 보기</button>`;
+    html+=`<button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+  }
+  card.innerHTML=html;
+  const ta=document.getElementById('tInput');
+  if(ta){ ta.focus(); ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.ctrlKey) checkText(); }); }
+}
+
+// 암송
+function renderRecall(card,v){
+  const hint=v.t.split(' ').slice(0,2).join(' ')+' ...';
+  let html=`
+    <p class="hint">잠언 ${ch}:${v.v} — 전체 절을 암송해 입력하세요</p>
+    <div class="recallFirst">${hint}</div>
+    <textarea id="tInput" rows="4" placeholder="암송하여 입력...">${getInput()}</textarea>`;
+
+  if(feedback===null){
+    html+=`<button class="btn" onclick="checkText()">확인</button>`;
+  } else if(feedback==='correct'){
+    html+=`<div class="okBox">✅ 완벽히 암송했습니다! 🔥</div>`;
+    html+=`<button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+  } else {
+    html+=`<div class="ngBox">❌ 정확하지 않습니다`;
+    if(showAns) html+=`<div class="answerText">${v.t}</div>`;
+    html+=`</div>`;
+    if(!showAns) html+=`<button class="btn ghost" onclick="revealAns()">정답 보기</button>`;
+    html+=`<button class="btn" onclick="nextVerse()">다음 절 →</button>`;
+  }
+  card.innerHTML=html;
+  const ta=document.getElementById('tInput');
+  if(ta){ ta.focus(); ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.ctrlKey) checkText(); }); }
+}
+
+let _inputVal='';
+function getInput(){ return _inputVal; }
+
+// ── 정답 확인 ──
+function checkChoice(selected){
+  const correct=blankKey;
+  document.querySelectorAll('.choiceBtn').forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===correct) b.classList.add('reveal');
+    if(b.textContent===selected && selected!==correct) b.classList.add('wrong');
+  });
+  if(selected===correct){
+    feedback='correct';
+    streak++; bestStreak=Math.max(bestStreak,streak);
+    xp+=10+Math.min(streak*2,20);
+  } else {
+    feedback='wrong';
+    streak=0; hearts=Math.max(0,hearts-1);
+  }
+  renderAll();
+}
+
+function checkText(){
+  const ta=document.getElementById('tInput');
+  if(!ta) return;
+  _inputVal=ta.value;
+  const input=ta.value.replace(/\s+/g,' ').trim();
+  const answer=verse().t.replace(/\s+/g,' ').trim();
+  if(input===answer){
+    feedback='correct';
+    streak++; bestStreak=Math.max(bestStreak,streak);
+    xp+=10+Math.min(streak*2,20);
+  } else {
+    feedback='wrong';
+    streak=0; hearts=Math.max(0,hearts-1);
+  }
+  renderAll();
+}
+
+function revealAns(){ showAns=true; renderAll(); }
+
+// ── 다음 절 ──
+function nextVerse(){
+  _inputVal='';
+  vi++;
+  if(vi>=verses().length){ renderDone(); return; }
+  resetVerse();
+  renderAll();
+}
+
+// ── 완료 화면 ──
+function renderDone(){
+  document.getElementById('main').style.display='none';
+  const ds=document.getElementById('doneScreen');
+  ds.style.display='flex';
+  document.getElementById('doneSubtitle').textContent=`잠언 ${ch}장 · ${MODES.find(m2=>m2.id===mode)?.label}`;
+  document.getElementById('dXP').textContent=xp;
+  document.getElementById('dStreak').textContent=bestStreak;
+  document.getElementById('dHearts').textContent=hearts;
+}
+
+function restart(){ initSession(); }
+function nextMode(){
+  const idx=MODES.findIndex(m2=>m2.id===mode);
+  mode=MODES[(idx+1)%MODES.length].id;
+  document.getElementById('doneScreen').style.display='none';
+  document.getElementById('main').style.display='flex';
+  initSession();
+}
+
+// ── 장 선택 패널 ──
+function buildChGrid(){
+  const grid=document.getElementById('chGrid');
+  grid.innerHTML='';
+  for(let i=1;i<=31;i++){
+    const b=document.createElement('button');
+    b.className='chBtn'+(i===ch?' active':'')+(i===todayCh?' today':'');
+    b.textContent=i;
+    b.onclick=()=>{ ch=i; toggleCh(); initSession(); };
+    grid.appendChild(b);
+  }
+  document.getElementById('chNote').textContent=`🌟 노란 테두리 = 오늘(${todayCh}장)`;
+}
+function toggleCh(){
+  const p=document.getElementById('chPanel');
+  const open=p.style.display==='block';
+  p.style.display=open?'none':'block';
+  if(!open) buildChGrid();
+}
+
+// ── 모드 탭 ──
+document.querySelectorAll('.mTab').forEach(b=>{
+  b.addEventListener('click',()=>{
+    mode=b.dataset.m;
+    initSession();
+  });
+});
+
+// ── 시작 ──
+resetVerse();
+initSession();
+</script>
+</body>
+</html>
