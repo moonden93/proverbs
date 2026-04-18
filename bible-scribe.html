@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f5f1e8">
+<title>필사 · 성경 필사 일기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f1e8;
+    --paper-2: #ebe4d3;
+    --paper-3: #e0d6bc;
+    --ink: #2a2620;
+    --ink-soft: #4a3f32;
+    --ink-muted: #8a7e6a;
+    --accent: #7a2e2e;
+    --accent-soft: #a04848;
+    --gold: #b08a3e;
+    --line: #d9cfb8;
+    --line-soft: #e5ddc8;
+    --success: #5a7a3e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Gowun Batang', 'Nanum Myeongjo', serif;
+    line-height: 1.75;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background-image:
+      radial-gradient(at 20% 10%, rgba(176, 138, 62, 0.06) 0%, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(122, 46, 46, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  .app { max-width: 1240px; margin: 0 auto; padding: 24px 20px 80px; }
+  @media (max-width: 640px) { .app { padding: 16px 12px 100px; } }
+
+  /* Header */
+  header.site {
+    text-align: center;
+    padding: 16px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  header.site::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 2px;
+    background: var(--gold);
+  }
+  .brand {
+    font-family: 'Nanum Myeongjo', serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 0.15em;
+  }
+  .brand-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+  .today {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* Tabs */
+  nav.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 18px;
+    color: var(--ink-muted);
+    cursor: pointer;
+    position: relative;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+  .tab-btn:hover { color: var(--ink-soft); }
+  .tab-btn.active { color: var(--accent); font-weight: 700; }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 70%; height: 2px;
+    background: var(--accent);
+  }
+
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Plan card */
+  .plan-card {
+    background: linear-gradient(to bottom, var(--paper-2), var(--paper));
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(42, 38, 32, 0.05);
+  }
+  .plan-card::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
+    border: 1px solid var(--line-soft);
+    pointer-events: none;
+  }
+  .plan-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .plan-reading {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .plan-meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+  }
+  .plan-meta .day-count { color: var(--accent); font-weight: 700; }
+
+  .progress-wrap {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+  .progress-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-bottom: 5px;
+    letter-spacing: 0.05em;
+  }
+  .progress-bar {
+    height: 3px;
+    background: var(--line-soft);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--gold), var(--accent));
+    transition: width 0.5s ease;
+  }
+
+  /* Two column work area */
+  .work-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  @media (max-width: 900px) {
+    .work-area { grid-template-columns: 1fr; }
+  }
+
+  .column { display: flex; flex-direction: column; }
+  .column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .column-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+  }
+
+  /* Source iframe */
+  .source-frame {
+    width: 100%;
+    height: 600px;
+    border: 1px solid var(--line);
+    background: white;
+  }
+  @media (max-width: 900px) {
+    .source-frame { height: 400px; }
+  }
+
+  .source-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .mini-select, .link-btn {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 5px 10px;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mini-select:hover, .link-btn:hover {
+    background: var(--paper-3);
+    border-color: var(--gold);
+  }
+  .link-btn {
+    text-decoration: none;
+    color: var(--accent);
+  }
+
+  /* Typing area */
+  .type-area {
+    width: 100%;
+    height: 600px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    font-family: 'Gowun Batang', serif;
+    font-size: 16px;
+    line-height: 2;
+    color: var(--ink);
+    resize: none;
+    outline: none;
+    background-image: repeating-linear-gradient(
+      transparent,
+      transparent 31px,
+      var(--line-soft) 31px,
+      var(--line-soft) 32px
+    );
+  }
+  @media (max-width: 900px) {
+    .type-area { height: 400px; }
+  }
+  .type-area:focus { border-color: var(--gold); }
+
+  .type-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Meditation area */
+  .meditation-section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .meditation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .meditation-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .meditation-title .year-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    font-weight: 400;
+    margin-left: 8px;
+  }
+  .meditation-area {
+    width: 100%;
+    min-height: 160px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+  }
+  .meditation-area:focus { border-color: var(--gold); background: var(--paper); }
+
+  /* Past meditations */
+  .past-meditations { margin-top: 20px; }
+  .past-meditation-item {
+    background: var(--paper-2);
+    border-left: 3px solid var(--gold);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .past-meditation-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .past-meditation-reading {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 13px;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+  .past-meditation-text {
+    font-size: 14px;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+    line-height: 1.7;
+  }
+
+  /* Actions */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 10px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: var(--accent); }
+  .btn.secondary {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn.secondary:hover {
+    background: var(--paper-2);
+    color: var(--ink);
+  }
+  .btn.saved {
+    background: var(--success) !important;
+  }
+
+  /* Calendar view */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .month-nav button {
+    background: none;
+    border: 1px solid var(--line);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+  .month-nav button:hover { background: var(--paper-2); border-color: var(--gold); }
+  .month-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 20px;
+    font-weight: 700;
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-dow {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+    padding: 8px 0;
+    text-transform: uppercase;
+  }
+  .cal-dow.sun { color: var(--accent); }
+  .cal-day {
+    aspect-ratio: 1;
+    background: var(--paper-2);
+    border: 1px solid transparent;
+    padding: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .cal-day:hover { border-color: var(--gold); }
+  .cal-day.empty { background: transparent; cursor: default; }
+  .cal-day.empty:hover { border-color: transparent; }
+  .cal-day.today {
+    border-color: var(--accent);
+    background: var(--paper);
+  }
+  .cal-day.has-entry {
+    background: linear-gradient(135deg, var(--paper-2), var(--paper-3));
+  }
+  .cal-day.has-entry::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; right: 4px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+  .cal-day-num {
+    font-family: 'Nanum Myeongjo', serif;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .cal-day-reading {
+    font-size: 9px;
+    color: var(--ink-muted);
+    line-height: 1.3;
+    overflow: hidden;
+  }
+
+  /* Settings */
+  .settings-section {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .settings-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 14px; color: var(--ink-soft); }
+  .setting-value { font-size: 13px; color: var(--ink-muted); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+  .empty-state .quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(42, 38, 32, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    max-width: 680px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px 32px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  }
+  .modal-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .modal-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    font-size: 13px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .modal-section { margin-bottom: 18px; }
+  .modal-section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .modal-text {
+    background: var(--paper-2);
+    padding: 14px 16px;
+    border-left: 3px solid var(--gold);
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 16px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 24px;
+    border-radius: 2px;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Loading */
+  .loading-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--paper-2); }
+  ::-webkit-scrollbar-thumb { background: var(--line); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="site">
+    <div class="brand">필 사</div>
+    <div class="brand-en">Scribing the Word</div>
+    <div class="today" id="todayDate"></div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="today">오늘의 필사</button>
+    <button class="tab-btn" data-tab="calendar">달력</button>
+    <button class="tab-btn" data-tab="settings">설정</button>
+  </nav>
+
+  <!-- TODAY PANEL -->
+  <section class="panel active" id="panel-today">
+    <div class="plan-card">
+      <div class="plan-label">Today's Reading</div>
+      <div class="plan-reading" id="todayReading">—</div>
+      <div class="plan-meta">
+        <span class="day-count" id="dayCount">Day 1</span> · <span id="planInfo">1년 완독</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-stats">
+          <span id="progressText">0 / 1189 장</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="work-area">
+      <div class="column">
+        <div class="column-header">
+          <div class="column-title">원문 · 대한성서공회</div>
+          <div class="source-controls">
+            <select class="mini-select" id="bookSelect"></select>
+            <select class="mini-select" id="chapterSelect"></select>
+            <a class="link-btn" id="openExternal" href="#" target="_blank" rel="noopener">↗ 새 창</a>
+          </div>
+        </div>
+        <iframe class="source-frame" id="sourceFrame" src="about:blank" title="성경 본문"></iframe>
+      </div>
+
+      <div class="column">
+        <div class="column-header">
+          <div class="column-title">나의 필사</div>
+          <div class="source-controls">
+            <button class="link-btn" id="clearType">지우기</button>
+          </div>
+        </div>
+        <textarea class="type-area" id="typingArea" placeholder="이 곳에 말씀을 필사하세요 ..."></textarea>
+        <div class="type-stats">
+          <span id="charCount">0 자</span>
+          <span id="lineCount">0 줄</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="meditation-section">
+      <div class="meditation-header">
+        <div class="meditation-title">
+          오늘의 묵상 <span class="year-mark" id="currentYear"></span>
+        </div>
+      </div>
+      <textarea class="meditation-area" id="meditationArea" placeholder="오늘 말씀을 통해 받은 은혜, 깨달음, 기도제목을 기록하세요 ..."></textarea>
+    </div>
+
+    <div class="past-meditations" id="pastMeditations"></div>
+
+    <div class="actions">
+      <button class="btn secondary" id="loadPrevBtn">불러오기</button>
+      <button class="btn" id="saveBtn">오늘의 기록 저장</button>
+    </div>
+  </section>
+
+  <!-- CALENDAR PANEL -->
+  <section class="panel" id="panel-calendar">
+    <div class="calendar-header">
+      <div class="month-nav">
+        <button id="prevMonth">‹</button>
+        <div class="month-title" id="monthTitle">—</div>
+        <button id="nextMonth">›</button>
+      </div>
+      <button class="btn secondary" id="goToday">오늘로</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </section>
+
+  <!-- SETTINGS PANEL -->
+  <section class="panel" id="panel-settings">
+    <div class="settings-section">
+      <div class="settings-title">필사 계획</div>
+      <div class="setting-row">
+        <span class="setting-label">시작일</span>
+        <span class="setting-value" id="settingStart">—</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">하루 분량</span>
+        <span class="setting-value">약 3~4장 (1년 완독)</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">역본</span>
+        <span class="setting-value">개역개정 (대한성서공회)</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">총 장수</span>
+        <span class="setting-value">1,189장 (구약 929 + 신약 260)</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">데이터 관리</div>
+      <div class="setting-row">
+        <span class="setting-label">저장된 기록</span>
+        <span class="setting-value" id="entryCount">0개</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">전체 기록 내보내기</span>
+        <button class="btn secondary" id="exportBtn" style="padding: 6px 14px; font-size: 12px;">JSON 다운로드</button>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">계획 다시 시작</span>
+        <button class="btn secondary" id="resetPlanBtn" style="padding: 6px 14px; font-size: 12px;">시작일 재설정</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">사용 안내</div>
+      <p style="font-size: 13px; color: var(--ink-soft); line-height: 1.8;">
+        왼쪽 창에서 대한성서공회 공식 성경 본문을 읽으며, 오른쪽 창에 직접 필사합니다.<br>
+        필사가 끝나면 아래 묵상란에 오늘의 깨달음을 기록하고 <b>저장</b>을 누르세요.<br>
+        내년 같은 날짜에 돌아오면 오늘의 묵상이 그대로 남아있어, 작년과 올해의 기록을 함께 볼 수 있습니다.<br>
+        매일의 기록이 쌓여 평생의 묵상 일기가 됩니다.
+      </p>
+    </div>
+  </section>
+</div>
+
+<!-- Modal for calendar day -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" style="position: relative;">
+    <button class="modal-close" id="modalClose">×</button>
+    <div class="modal-title" id="modalTitle">—</div>
+    <div class="modal-date" id="modalDate">—</div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ Bible book data ============
+const BOOKS = [
+  // OT
+  {code:'GEN', kor:'창세기', ch:50, testament:'ot'},
+  {code:'EXO', kor:'출애굽기', ch:40, testament:'ot'},
+  {code:'LEV', kor:'레위기', ch:27, testament:'ot'},
+  {code:'NUM', kor:'민수기', ch:36, testament:'ot'},
+  {code:'DEU', kor:'신명기', ch:34, testament:'ot'},
+  {code:'JOS', kor:'여호수아', ch:24, testament:'ot'},
+  {code:'JDG', kor:'사사기', ch:21, testament:'ot'},
+  {code:'RUT', kor:'룻기', ch:4, testament:'ot'},
+  {code:'1SA', kor:'사무엘상', ch:31, testament:'ot'},
+  {code:'2SA', kor:'사무엘하', ch:24, testament:'ot'},
+  {code:'1KI', kor:'열왕기상', ch:22, testament:'ot'},
+  {code:'2KI', kor:'열왕기하', ch:25, testament:'ot'},
+  {code:'1CH', kor:'역대상', ch:29, testament:'ot'},
+  {code:'2CH', kor:'역대하', ch:36, testament:'ot'},
+  {code:'EZR', kor:'에스라', ch:10, testament:'ot'},
+  {code:'NEH', kor:'느헤미야', ch:13, testament:'ot'},
+  {code:'EST', kor:'에스더', ch:10, testament:'ot'},
+  {code:'JOB', kor:'욥기', ch:42, testament:'ot'},
+  {code:'PSA', kor:'시편', ch:150, testament:'ot'},
+  {code:'PRO', kor:'잠언', ch:31, testament:'ot'},
+  {code:'ECC', kor:'전도서', ch:12, testament:'ot'},
+  {code:'SNG', kor:'아가', ch:8, testament:'ot'},
+  {code:'ISA', kor:'이사야', ch:66, testament:'ot'},
+  {code:'JER', kor:'예레미야', ch:52, testament:'ot'},
+  {code:'LAM', kor:'예레미야애가', ch:5, testament:'ot'},
+  {code:'EZK', kor:'에스겔', ch:48, testament:'ot'},
+  {code:'DAN', kor:'다니엘', ch:12, testament:'ot'},
+  {code:'HOS', kor:'호세아', ch:14, testament:'ot'},
+  {code:'JOL', kor:'요엘', ch:3, testament:'ot'},
+  {code:'AMO', kor:'아모스', ch:9, testament:'ot'},
+  {code:'OBA', kor:'오바댜', ch:1, testament:'ot'},
+  {code:'JON', kor:'요나', ch:4, testament:'ot'},
+  {code:'MIC', kor:'미가', ch:7, testament:'ot'},
+  {code:'NAM', kor:'나훔', ch:3, testament:'ot'},
+  {code:'HAB', kor:'하박국', ch:3, testament:'ot'},
+  {code:'ZEP', kor:'스바냐', ch:3, testament:'ot'},
+  {code:'HAG', kor:'학개', ch:2, testament:'ot'},
+  {code:'ZEC', kor:'스가랴', ch:14, testament:'ot'},
+  {code:'MAL', kor:'말라기', ch:4, testament:'ot'},
+  // NT
+  {code:'MAT', kor:'마태복음', ch:28, testament:'nt'},
+  {code:'MRK', kor:'마가복음', ch:16, testament:'nt'},
+  {code:'LUK', kor:'누가복음', ch:24, testament:'nt'},
+  {code:'JHN', kor:'요한복음', ch:21, testament:'nt'},
+  {code:'ACT', kor:'사도행전', ch:28, testament:'nt'},
+  {code:'ROM', kor:'로마서', ch:16, testament:'nt'},
+  {code:'1CO', kor:'고린도전서', ch:16, testament:'nt'},
+  {code:'2CO', kor:'고린도후서', ch:13, testament:'nt'},
+  {code:'GAL', kor:'갈라디아서', ch:6, testament:'nt'},
+  {code:'EPH', kor:'에베소서', ch:6, testament:'nt'},
+  {code:'PHP', kor:'빌립보서', ch:4, testament:'nt'},
+  {code:'COL', kor:'골로새서', ch:4, testament:'nt'},
+  {code:'1TH', kor:'데살로니가전서', ch:5, testament:'nt'},
+  {code:'2TH', kor:'데살로니가후서', ch:3, testament:'nt'},
+  {code:'1TI', kor:'디모데전서', ch:6, testament:'nt'},
+  {code:'2TI', kor:'디모데후서', ch:4, testament:'nt'},
+  {code:'TIT', kor:'디도서', ch:4, testament:'nt'},
+  {code:'PHM', kor:'빌레몬서', ch:1, testament:'nt'},
+  {code:'HEB', kor:'히브리서', ch:13, testament:'nt'},
+  {code:'JAS', kor:'야고보서', ch:5, testament:'nt'},
+  {code:'1PE', kor:'베드로전서', ch:5, testament:'nt'},
+  {code:'2PE', kor:'베드로후서', ch:3, testament:'nt'},
+  {code:'1JN', kor:'요한일서', ch:5, testament:'nt'},
+  {code:'2JN', kor:'요한이서', ch:1, testament:'nt'},
+  {code:'3JN', kor:'요한삼서', ch:1, testament:'nt'},
+  {code:'JUD', kor:'유다서', ch:1, testament:'nt'},
+  {code:'REV', kor:'요한계시록', ch:22, testament:'nt'}
+];
+
+// Build flat sequence of all chapters in canonical order
+const ALL_CHAPTERS = [];
+BOOKS.forEach(book => {
+  for (let c = 1; c <= book.ch; c++) {
+    ALL_CHAPTERS.push({ code: book.code, kor: book.kor, chapter: c });
+  }
+});
+const TOTAL_CHAPTERS = ALL_CHAPTERS.length; // 1189
+const CHAPTERS_PER_DAY = 3.26; // 1189 / 365
+const PLAN_DAYS = 365;
+
+// ============ State ============
+let state = {
+  startDate: null,      // 'YYYY-MM-DD'
+  currentView: new Date()
+};
+let entries = {};       // { 'MM-DD': [ {year, reading, text, meditation, savedAt} ] }
+let saveTimeout = null;
+
+// ============ Storage helpers ============
+async function loadConfig() {
+  try {
+    const r = await window.storage.get('config');
+    if (r && r.value) {
+      const cfg = JSON.parse(r.value);
+      state.startDate = cfg.startDate;
+    }
+  } catch(e) {}
+  if (!state.startDate) {
+    state.startDate = todayStr();
+    await saveConfig();
+  }
+}
+async function saveConfig() {
+  try {
+    await window.storage.set('config', JSON.stringify({ startDate: state.startDate }));
+  } catch(e) {}
+}
+
+async function loadAllEntries() {
+  try {
+    const r = await window.storage.list('entry:');
+    if (r && r.keys) {
+      entries = {};
+      // Fetch each entry
+      for (const key of r.keys) {
+        try {
+          const item = await window.storage.get(key);
+          if (item && item.value) {
+            const data = JSON.parse(item.value);
+            // key format: entry:MM-DD:YYYY
+            const parts = key.split(':');
+            if (parts.length === 3) {
+              const md = parts[1];
+              if (!entries[md]) entries[md] = [];
+              entries[md].push(data);
+            }
+          }
+        } catch(e) {}
+      }
+      // Sort each by year
+      Object.keys(entries).forEach(md => {
+        entries[md].sort((a,b) => b.year - a.year);
+      });
+    }
+  } catch(e) {
+    console.error('Load entries failed', e);
+  }
+}
+
+async function saveEntry(mmdd, year, data) {
+  const key = `entry:${mmdd}:${year}`;
+  try {
+    await window.storage.set(key, JSON.stringify(data));
+    if (!entries[mmdd]) entries[mmdd] = [];
+    const existingIdx = entries[mmdd].findIndex(e => e.year === year);
+    if (existingIdx >= 0) entries[mmdd][existingIdx] = data;
+    else entries[mmdd].push(data);
+    entries[mmdd].sort((a,b) => b.year - a.year);
+    return true;
+  } catch(e) {
+    console.error('Save failed', e);
+    return false;
+  }
+}
+
+// ============ Date helpers ============
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function toMMDD(d) {
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${m}-${day}`;
+}
+function daysBetween(startStr, endStr) {
+  const s = new Date(startStr + 'T00:00:00');
+  const e = new Date(endStr + 'T00:00:00');
+  return Math.floor((e - s) / 86400000);
+}
+
+// ============ Reading plan calculation ============
+function getReadingForDay(dayIndex) {
+  // dayIndex: 0-based day from start
+  // Cycle through PLAN_DAYS
+  const cycleDay = ((dayIndex % PLAN_DAYS) + PLAN_DAYS) % PLAN_DAYS;
+  const startCh = Math.floor(cycleDay * CHAPTERS_PER_DAY);
+  let endCh = Math.floor((cycleDay + 1) * CHAPTERS_PER_DAY);
+  if (cycleDay === PLAN_DAYS - 1) endCh = TOTAL_CHAPTERS;
+  endCh = Math.min(endCh, TOTAL_CHAPTERS);
+
+  const chapters = [];
+  for (let i = startCh; i < endCh; i++) {
+    chapters.push(ALL_CHAPTERS[i]);
+  }
+  return { dayIndex: cycleDay, startCh, endCh, chapters };
+}
+
+function formatReading(chapters) {
+  if (!chapters.length) return '—';
+  // Group consecutive chapters of same book
+  const groups = [];
+  let current = null;
+  chapters.forEach(ch => {
+    if (current && current.code === ch.code && current.end + 1 === ch.chapter) {
+      current.end = ch.chapter;
+    } else {
+      if (current) groups.push(current);
+      current = { code: ch.code, kor: ch.kor, start: ch.chapter, end: ch.chapter };
+    }
+  });
+  if (current) groups.push(current);
+
+  return groups.map(g => {
+    if (g.start === g.end) return `${g.kor} ${g.start}장`;
+    return `${g.kor} ${g.start}~${g.end}장`;
+  }).join(', ');
+}
+
+// ============ Tabs ============
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'calendar') renderCalendar();
+    if (tab === 'settings') renderSettings();
+  });
+});
+
+// ============ Today panel render ============
+function renderToday() {
+  const today = todayStr();
+  const dayIdx = daysBetween(state.startDate, today);
+  const reading = getReadingForDay(dayIdx);
+
+  document.getElementById('todayDate').textContent = formatKoreanDate(new Date());
+  document.getElementById('currentYear').textContent = new Date().getFullYear() + '년';
+
+  document.getElementById('todayReading').textContent = formatReading(reading.chapters);
+  document.getElementById('dayCount').textContent = `Day ${(dayIdx % PLAN_DAYS) + 1}`;
+
+  const cycleNum = Math.floor(dayIdx / PLAN_DAYS) + 1;
+  document.getElementById('planInfo').textContent = cycleNum > 1 ? `${cycleNum}회독 진행 중` : '1년 완독 계획';
+
+  // Progress
+  const completed = reading.endCh;
+  const pct = Math.round((completed / TOTAL_CHAPTERS) * 100);
+  document.getElementById('progressText').textContent = `${completed} / ${TOTAL_CHAPTERS} 장`;
+  document.getElementById('progressPercent').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Populate book/chapter dropdowns and load first chapter of today's reading
+  populateBookSelect();
+  if (reading.chapters.length > 0) {
+    const first = reading.chapters[0];
+    loadBibleChapter(first.code, first.chapter);
+  }
+
+  // Load today's existing meditation if any
+  const mmdd = toMMDD(new Date());
+  const currentYear = new Date().getFullYear();
+  const todayEntry = (entries[mmdd] || []).find(e => e.year === currentYear);
+  if (todayEntry) {
+    document.getElementById('typingArea').value = todayEntry.text || '';
+    document.getElementById('meditationArea').value = todayEntry.meditation || '';
+  }
+  updateTypeStats();
+
+  // Past meditations (previous years, same date)
+  renderPastMeditations(mmdd, currentYear);
+}
+
+function renderPastMeditations(mmdd, currentYear) {
+  const container = document.getElementById('pastMeditations');
+  const past = (entries[mmdd] || []).filter(e => e.year < currentYear);
+  if (past.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = `
+    <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;letter-spacing:0.2em;color:var(--ink-muted);text-transform:uppercase;margin-bottom:12px;padding-top:20px;border-top:1px solid var(--line);">
+      ✦ Past Reflections on This Day
+    </div>
+    ${past.map(e => `
+      <div class="past-meditation-item">
+        <div class="past-meditation-date">${e.year}년 · ${formatKoreanMD(mmdd)}</div>
+        <div class="past-meditation-reading">${escapeHtml(e.reading || '—')}</div>
+        ${e.meditation ? `<div class="past-meditation-text">${escapeHtml(e.meditation)}</div>` : '<div style="font-style:italic;color:var(--ink-muted);font-size:13px;">묵상 기록 없음</div>'}
+      </div>
+    `).join('')}
+  `;
+}
+
+function formatKoreanDate(d) {
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${days[d.getDay()]}요일`;
+}
+function formatKoreanMD(mmdd) {
+  const [m, d] = mmdd.split('-');
+  return `${parseInt(m)}월 ${parseInt(d)}일`;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ============ Bible frame ============
+function populateBookSelect() {
+  const sel = document.getElementById('bookSelect');
+  if (sel.options.length > 0) return; // only once
+  BOOKS.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.code;
+    opt.textContent = b.kor;
+    sel.appendChild(opt);
+  });
+}
+
+function loadBibleChapter(code, ch) {
+  const url = `https://bible.bskorea.or.kr/bible/NKRV/${code}.${ch}`;
+  document.getElementById('sourceFrame').src = url;
+  document.getElementById('openExternal').href = url;
+  // Sync dropdowns
+  document.getElementById('bookSelect').value = code;
+  const book = BOOKS.find(b => b.code === code);
+  const chSel = document.getElementById('chapterSelect');
+  chSel.innerHTML = '';
+  if (book) {
+    for (let i = 1; i <= book.ch; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i + '장';
+      chSel.appendChild(opt);
+    }
+    chSel.value = ch;
+  }
+}
+
+document.getElementById('bookSelect').addEventListener('change', (e) => {
+  loadBibleChapter(e.target.value, 1);
+});
+document.getElementById('chapterSelect').addEventListener('change', (e) => {
+  const code = document.getElementById('bookSelect').value;
+  loadBibleChapter(code, parseInt(e.target.value));
+});
+
+// ============ Typing area ============
+const typingArea = document.getElementById('typingArea');
+const meditationArea = document.getElementById('meditationArea');
+
+typingArea.addEventListener('input', () => {
+  updateTypeStats();
+  scheduleAutoSave();
+});
+meditationArea.addEventListener('input', scheduleAutoSave);
+
+function updateTypeStats() {
+  const t = typingArea.value;
+  document.getElementById('charCount').textContent = `${t.length} 자`;
+  document.getElementById('lineCount').textContent = `${t.split('\n').length} 줄`;
+}
+
+document.getElementById('clearType').addEventListener('click', () => {
+  if (confirm('필사한 내용을 모두 지울까요?')) {
+    typingArea.value = '';
+    updateTypeStats();
+    scheduleAutoSave();
+  }
+});
+
+// ============ Auto-save (debounced) ============
+function scheduleAutoSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => doSave(true), 3000);
+}
+
+async function doSave(isAuto) {
+  const today = new Date();
+  const mmdd = toMMDD(today);
+  const year = today.getFullYear();
+  const dayIdx = daysBetween(state.startDate, todayStr());
+  const reading = getReadingForDay(dayIdx);
+  const data = {
+    year,
+    date: todayStr(),
+    reading: formatReading(reading.chapters),
+    text: typingArea.value,
+    meditation: meditationArea.value,
+    savedAt: new Date().toISOString()
+  };
+  // Don't save if everything is empty
+  if (!data.text.trim() && !data.meditation.trim()) return;
+
+  const ok = await saveEntry(mmdd, year, data);
+  if (ok && !isAuto) {
+    showToast('오늘의 기록이 저장되었습니다');
+    const btn = document.getElementById('saveBtn');
+    btn.classList.add('saved');
+    btn.textContent = '저장됨 ✓';
+    setTimeout(() => {
+      btn.classList.remove('saved');
+      btn.textContent = '오늘의 기록 저장';
+    }, 2000);
+  }
+}
+
+document.getElementById('saveBtn').addEventListener('click', () => doSave(false));
+
+document.getElementById('loadPrevBtn').addEventListener('click', async () => {
+  // Load last year's entry for today if exists
+  const mmdd = toMMDD(new Date());
+  const currentYear = new Date().getFullYear();
+  const prev = (entries[mmdd] || []).find(e => e.year === currentYear - 1);
+  if (prev) {
+    if (confirm(`${currentYear - 1}년 ${formatKoreanMD(mmdd)}의 필사를 불러올까요? (현재 입력 중인 내용은 덮어쓰기 됩니다)`)) {
+      typingArea.value = prev.text || '';
+      updateTypeStats();
+      showToast('작년 기록을 불러왔습니다');
+    }
+  } else {
+    showToast('작년 같은 날의 기록이 없습니다');
+  }
+});
+
+// ============ Toast ============
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ============ Calendar ============
+function renderCalendar() {
+  const d = state.currentView;
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('monthTitle').textContent = `${year}. ${monthNames[month]}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  // Day of week headers
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((dow, i) => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow' + (i === 0 ? ' sun' : '');
+    el.textContent = dow;
+    grid.appendChild(el);
+  });
+
+  // Empty cells
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    grid.appendChild(el);
+  }
+
+  const todayISO = todayStr();
+  // Days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateObj = new Date(year, month, day);
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const mmdd = `${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    if (dateStr === todayISO) el.classList.add('today');
+    if (entries[mmdd] && entries[mmdd].length > 0) el.classList.add('has-entry');
+
+    const dayIdx = daysBetween(state.startDate, dateStr);
+    const reading = getReadingForDay(dayIdx);
+    const readingShort = formatReadingShort(reading.chapters);
+
+    el.innerHTML = `
+      <div class="cal-day-num">${day}</div>
+      <div class="cal-day-reading">${readingShort}</div>
+    `;
+    el.addEventListener('click', () => openDayModal(mmdd, dateStr, day, month, year));
+    grid.appendChild(el);
+  }
+}
+
+function formatReadingShort(chapters) {
+  if (!chapters.length) return '';
+  const first = chapters[0];
+  const last = chapters[chapters.length - 1];
+  if (first.code === last.code) {
+    if (first.chapter === last.chapter) return `${first.kor}${first.chapter}`;
+    return `${first.kor}${first.chapter}-${last.chapter}`;
+  }
+  return `${first.kor}${first.chapter}~`;
+}
+
+document.getElementById('prevMonth').addEventListener('click', () => {
+  state.currentView = new Date(state.currentView.getFullYear(), state.currentView.getMonth() - 1, 1);
+  renderCalendar();
+});
+document.getElementById('nextMonth').addEventListener('click', () => {
+  state.currentView = new Date(state.currentView.getFullYear(), state.currentView.getMonth() + 1, 1);
+  renderCalendar();
+});
+document.getElementById('goToday').addEventListener('click', () => {
+  state.currentView = new Date();
+  renderCalendar();
+});
+
+// ============ Modal ============
+function openDayModal(mmdd, dateStr, day, month, year) {
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('modalTitle').textContent = `${monthNames[month]} ${day}일`;
+  document.getElementById('modalDate').textContent = `${year}년 · Day ${(daysBetween(state.startDate, dateStr) % PLAN_DAYS) + 1}`;
+
+  const dayIdx = daysBetween(state.startDate, dateStr);
+  const reading = getReadingForDay(dayIdx);
+  const readingText = formatReading(reading.chapters);
+
+  let html = `
+    <div class="modal-section">
+      <div class="modal-section-label">필사 본문</div>
+      <div style="font-family:'Nanum Myeongjo',serif;font-size:16px;color:var(--ink);padding:10px 0;">${escapeHtml(readingText)}</div>
+    </div>
+  `;
+
+  const dayEntries = entries[mmdd] || [];
+  if (dayEntries.length === 0) {
+    html += `
+      <div class="modal-section">
+        <div class="empty-state" style="padding:20px 0;">
+          <div class="quote">아직 기록이 없습니다</div>
+          <div style="font-size:13px;">이 날의 필사와 묵상을 남겨보세요</div>
+        </div>
+      </div>
+    `;
+  } else {
+    dayEntries.forEach(e => {
+      html += `
+        <div class="modal-section">
+          <div class="modal-section-label">${e.year}년 묵상</div>
+          ${e.meditation ? `<div class="modal-text">${escapeHtml(e.meditation)}</div>` : '<div style="color:var(--ink-muted);font-style:italic;font-size:13px;">묵상 기록 없음</div>'}
+          ${e.text ? `
+            <div style="margin-top:10px;">
+              <div class="modal-section-label">필사</div>
+              <div class="modal-text" style="max-height:160px;">${escapeHtml(e.text)}</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalBackdrop').classList.add('show');
+}
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('modalBackdrop').classList.remove('show');
+});
+document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'modalBackdrop') {
+    document.getElementById('modalBackdrop').classList.remove('show');
+  }
+});
+
+// ============ Settings ============
+function renderSettings() {
+  document.getElementById('settingStart').textContent = state.startDate;
+  const total = Object.values(entries).reduce((sum, arr) => sum + arr.length, 0);
+  document.getElementById('entryCount').textContent = `${total}개`;
+}
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    config: { startDate: state.startDate },
+    entries
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `필사기록_${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('resetPlanBtn').addEventListener('click', async () => {
+  const newDate = prompt('새로운 시작일을 입력하세요 (YYYY-MM-DD 형식)', todayStr());
+  if (newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    state.startDate = newDate;
+    await saveConfig();
+    renderSettings();
+    renderToday();
+    showToast('시작일이 재설정되었습니다');
+  }
+});
+
+// ============ Init ============
+(async function init() {
+  await loadConfig();
+  await loadAllEntries();
+  renderToday();
+})();
+</script>
+</body>
+</html>
